@@ -122,7 +122,7 @@ function updateCartUI() {
     cartTotalElement.textContent = `${total.toLocaleString()} DA`;
 }
 
-// --- WHATSAPP CHECKOUT ---
+// ---WHATSAPP CHECKOUT ---
 const whatsappBtn = document.getElementById('whatsapp-checkout');
 if (whatsappBtn) {
     whatsappBtn.onclick = () => {
@@ -140,7 +140,7 @@ if (whatsappBtn) {
         message += `\nTotal: ${total.toLocaleString()} DA\n\nPlease let me know the delivery details.`;
 
         const encodedMessage = encodeURIComponent(message);
-        const whatsappNumber = "213XXXXXXXXX"; // OWNER SHOULD CHANGE THIS
+        const whatsappNumber = "213774743573"; // Store Owner Number
         window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
     };
 }
