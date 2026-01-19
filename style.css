@@ -1,0 +1,227 @@
+:root {
+    --mercury: #E5E5E5;
+    --cod-gray: #111111;
+    --white: #FFFFFF;
+    --nav-height: 60px;
+    --font-primary: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--white);
+    color: var(--cod-gray);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Navbar */
+.navbar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: var(--nav-height);
+    background: var(--white);
+    z-index: 1000;
+    border-bottom: 1px solid var(--mercury);
+    display: flex;
+    align-items: center;
+}
+
+.nav-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    cursor: pointer;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--cod-gray);
+    font-weight: 600;
+    margin: 0 20px;
+    font-size: 16px;
+    transition: opacity 0.2s;
+}
+
+.nav-links a:hover {
+    opacity: 0.7;
+}
+
+.sale-link {
+    color: #FF0000 !important;
+}
+
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-bar input {
+    background: var(--mercury);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Hero Section */
+.hero {
+    height: 80vh;
+    background: var(--mercury); /* Placeholder for image */
+    background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url('https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=2070');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--white);
+}
+
+.hero-content h1 {
+    font-size: 72px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    letter-spacing: -2px;
+}
+
+.hero-content p {
+    font-size: 20px;
+    margin-bottom: 300px; /* Space for CTA at bottom if needed or adjust */
+    margin-bottom: 30px;
+}
+
+.cta-btn {
+    background: var(--white);
+    color: var(--cod-gray);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.cta-btn:hover {
+    background: #f0f0f0;
+    transform: scale(1.05);
+}
+
+/* Featured Products */
+.featured-products {
+    padding: 80px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.section-header h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 40px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px;
+}
+
+.product-card {
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.product-image {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: var(--mercury);
+    margin-bottom: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.product-info p {
+    color: #757575;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.product-price {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* Footer */
+footer {
+    border-top: 1px solid var(--mercury);
+    padding: 60px 40px;
+    background: var(--white);
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none; /* simple mobile hide for now */
+    }
+    
+    .hero-content h1 {
+        font-size: 40px;
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+}
