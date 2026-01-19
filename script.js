@@ -1,83 +1,68 @@
-const products = [
-    {
-        id: 1,
-        name: "Ensemble Nike Tech New (Grey)",
-        category: "Men",
-        price: 38500,
-        displayPrice: "38,500 DA",
-        image: "images/lacoste_grey.jpg"
-    },
-    {
-        id: 2,
-        name: "Slide ✔️ UPTM Pointure 46 t",
-        category: "Shoes",
-        price: 20500,
-        displayPrice: "20,500 DA",
-        image: "images/shoes_orange.jpg"
-    },
-    {
-        id: 3,
-        name: "Ensemble Nike Tech New (Green)",
-        category: "Men",
-        price: 38500,
-        displayPrice: "38,500 DA",
-        image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=1000"
-    },
-    {
-        id: 4,
-        name: "Sweat-shirt Air Jordan (Black)",
-        category: "Men",
-        price: 12000,
-        displayPrice: "12,000 DA",
-        image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=1000"
-    },
-    {
-        id: 5,
-        name: "Pantalon Nike Air (Classic)",
-        category: "Men",
-        price: 11000,
-        displayPrice: "11,000 DA",
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=1000"
-    },
-    {
-        id: 6,
-        name: "Sweat-shirt Air Jordan (White)",
-        category: "Men",
-        price: 12500,
-        displayPrice: "12,500 DA",
-        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=1000"
-    },
-    {
-        id: 7,
-        name: "Claquette Lacoste (Original)",
-        category: "Shoes",
-        price: 12800,
-        displayPrice: "12,800 DA",
-        image: "https://images.unsplash.com/photo-1603808033192-082d651457bb?auto=format&fit=crop&q=80&w=1000"
-    }
-];
+// --- FIREBASE CONFIGURATION ---
+// IMPORTANT: Replace this with your own Firebase Config from Firebase Console
+const firebaseConfig = {
+    apiKey: "AIzaSyAs-EXAMPLE-PLACEHOLDER",
+    authDomain: "ici-cest-paris-store.firebaseapp.com",
+    databaseURL: "https://ici-cest-paris-store-default-rtdb.firebaseio.com",
+    projectId: "ici-cest-paris-store",
+    storageBucket: "ici-cest-paris-store.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef"
+};
 
+// Initialize Firebase
+if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+}
+
+// --- PRODUCT STATE ---
+let products = [];
 let cart = [];
 
-// --- RENDERING PRODUCTS ---
-function renderProducts(filteredProducts = products) {
-    const productGrid = document.getElementById('product-grid');
-    if (!productGrid) return;
-
-    if (filteredProducts.length === 0) {
-        productGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 40px;">Aucun produit trouvé.</p>`;
+// --- FETCH FROM FIREBASE ---
+function syncProducts() {
+    if (typeof database === 'undefined') {
+        console.warn("Firebase not initialized. Using local fallback.");
+        renderProducts(fallbackProducts);
         return;
     }
 
-    productGrid.innerHTML = filteredProducts.map((product, index) => `
+    database.ref('products').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            products = Object.values(data);
+            renderProducts(products);
+        } else {
+            console.log("No data in Firebase. Loading defaults.");
+            renderProducts(fallbackProducts);
+        }
+    });
+}
+
+const fallbackProducts = [
+    { id: 1, name: "Nike Tech Grey", category: "Homme", price: 38500, displayPrice: "38,500 DA", image: "images/lacoste_grey.jpg" },
+    { id: 2, name: "Jordan Sweat Black", category: "Homme", price: 12000, displayPrice: "12,000 DA", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=1000" }
+];
+
+// --- RENDERING PRODUCTS ---
+function renderProducts(pList) {
+    const productGrid = document.getElementById('product-grid');
+    if (!productGrid) return;
+
+    productGrid.innerHTML = pList.map((product, index) => `
         <div class="product-card reveal-item" style="transition-delay: ${index * 0.05}s" onclick="openProductModal(${product.id})">
             <div class="product-image">
+                ${product.oldPrice ? `<div class="discount-label" style="position:absolute; background:var(--paris-red); color:white; padding:5px 10px; z-index:10; font-weight:800; border-radius:0 0 10px 0;">PROMO</div>` : ''}
                 <img src="${product.image}" alt="${product.name}" onerror="this.src='https://placehold.co/600x600?text=Paris+Boutique'" loading="lazy">
             </div>
             <div class="product-info">
                 <h3>${product.name}</h3>
                 <p>${product.category}</p>
-                <div class="product-price">${product.displayPrice}</div>
+                <div class="product-price">
+                    ${product.oldPrice ? `<span style="text-decoration:line-through; color:#999; font-size:14px; margin-right:10px;">${product.oldPrice.toLocaleString()} DA</span>` : ''}
+                    ${product.displayPrice}
+                </div>
             </div>
         </div>
     `).join('');
@@ -91,7 +76,8 @@ const slidesContainer = document.querySelector('.slides');
 const dotsContainer = document.getElementById('slider-dots');
 const slides = document.querySelectorAll('.slide');
 
-if (dotsContainer) {
+if (dotsContainer && slides.length > 0) {
+    dotsContainer.innerHTML = '';
     slides.forEach((_, i) => {
         const dot = document.createElement('div');
         dot.classList.add('dot');
@@ -103,20 +89,61 @@ if (dotsContainer) {
 
 function goToSlide(index) {
     currentSlide = index;
-    slidesContainer.style.transform = `translateX(-${currentSlide * 33.333}%)`;
+    if (slidesContainer) slidesContainer.style.transform = `translateX(-${currentSlide * 33.333}%)`;
     document.querySelectorAll('.dot').forEach((dot, i) => {
         dot.classList.toggle('active', i === currentSlide);
     });
 }
 
 function nextSlide() {
-    currentSlide = (currentSlide + 1) % 3;
-    goToSlide(currentSlide);
+    if (slides.length > 0) {
+        currentSlide = (currentSlide + 1) % 3;
+        goToSlide(currentSlide);
+    }
+}
+setInterval(nextSlide, 5000);
+
+// --- WHATSAPP ORDER LOGIC ---
+function sendToWhatsApp(productId) {
+    const product = products.find(p => p.id === productId) || fallbackProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    const message = `salam ici.c'est.PARIS khasni hed product: ${product.name} (${product.displayPrice})`;
+    const encoded = encodeURIComponent(message);
+    window.open(`https://wa.me/213774743573?text=${encoded}`, '_blank');
 }
 
-setInterval(nextSlide, 5000); // Auto-play every 5s
+// --- NOTIFICATIONS ---
+function showNotification(message) {
+    const container = document.getElementById('notification-container');
+    if (!container) return;
+    const notification = document.createElement('div');
+    notification.classList.add('notification');
+    notification.innerHTML = `<span>✔️</span> ${message}`;
+    container.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
 
-// --- DYNAMIC SCROLL REVEAL ---
+// --- MODAL ---
+function openProductModal(productId) {
+    const product = products.find(p => p.id === productId) || fallbackProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    document.getElementById('modal-image').src = product.image;
+    document.getElementById('modal-name').textContent = product.name;
+    document.getElementById('modal-category').textContent = product.category;
+    document.getElementById('modal-price').textContent = product.displayPrice;
+
+    const modal = document.getElementById('product-modal');
+    modal.classList.add('active');
+
+    // Update the Add to Cart button to be a direct WhatsApp trigger as per user request
+    const addBtn = document.querySelector('.add-to-cart-btn');
+    addBtn.textContent = "COMMANDER VIA WHATSAPP";
+    addBtn.onclick = () => sendToWhatsApp(productId);
+}
+
+// --- DYNAMIC REVEAL ---
 function triggerReveal() {
     const reveals = document.querySelectorAll('.reveal, .reveal-item');
     const observer = new IntersectionObserver((entries) => {
@@ -127,137 +154,18 @@ function triggerReveal() {
     reveals.forEach(reveal => observer.observe(reveal));
 }
 
-// --- NOTIFICATIONS ---
-function showNotification(message) {
-    const container = document.getElementById('notification-container');
-    const notification = document.createElement('div');
-    notification.classList.add('notification');
-    notification.innerHTML = `<span>✔️</span> ${message}`;
-    container.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-}
+// --- INITIALIZE ---
+document.addEventListener('DOMContentLoaded', () => {
+    syncProducts();
+    triggerReveal();
+});
 
-// --- CATEGORY FILTERING ---
+// Category filtering updated for dynamic list
 document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
         const category = e.target.getAttribute('data-category');
-        document.querySelectorAll('.nav-links a').forEach(l => l.style.color = "var(--cod-gray)");
-        e.target.style.color = "var(--paris-red)";
-
-        if (category === 'all') {
-            renderProducts(products);
-        } else {
-            const filtered = products.filter(p =>
-                (category === 'Men' && p.category === 'Men') ||
-                (category === 'Shoes' && p.category === 'Shoes') ||
-                (category === 'Accessoires' && p.category === 'Accessoires') ||
-                (category === 'Sale' && p.name.toLowerCase().includes('nouveauté'))
-            );
-            renderProducts(filtered);
-        }
+        if (category === 'all') renderProducts(products);
+        else renderProducts(products.filter(p => p.category === category));
     });
 });
-
-// --- SEARCH ---
-const searchInput = document.getElementById('search-input');
-if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const filtered = products.filter(p =>
-            p.name.toLowerCase().includes(searchTerm) ||
-            p.category.toLowerCase().includes(searchTerm)
-        );
-        renderProducts(filtered);
-    });
-}
-
-// --- CART ---
-const cartDrawer = document.getElementById('cart-drawer');
-const cartItemsContainer = document.getElementById('cart-items');
-const cartTotalElement = document.getElementById('cart-total-amount');
-const cartBtn = document.getElementById('cart-btn');
-const closeCart = document.querySelector('.close-cart');
-
-function toggleCart() { cartDrawer.classList.toggle('active'); }
-if (cartBtn) cartBtn.onclick = toggleCart;
-if (closeCart) closeCart.onclick = toggleCart;
-
-function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    cart.push(product);
-    updateCartUI();
-    showNotification(`${product.name} ajouté au panier !`);
-    if (!cartDrawer.classList.contains('active')) {
-        setTimeout(toggleCart, 500);
-    }
-}
-
-function removeFromCart(index) {
-    cart.splice(index, 1);
-    updateCartUI();
-}
-
-function updateCartUI() {
-    if (cartBtn) cartBtn.textContent = `Panier (${cart.length})`;
-    cartItemsContainer.innerHTML = cart.map((item, index) => `
-        <div class="cart-item">
-            <img src="${item.image}" alt="${item.name}">
-            <div class="cart-item-info">
-                <h4>${item.name}</h4>
-                <p>${item.displayPrice}</p>
-                <span class="remove-item" onclick="removeFromCart(${index})">Supprimer</span>
-            </div>
-        </div>
-    `).join('');
-    const total = cart.reduce((sum, item) => sum + item.price, 0);
-    cartTotalElement.textContent = `${total.toLocaleString()} DA`;
-}
-
-// --- WHATSAPP ---
-const whatsappBtn = document.getElementById('whatsapp-checkout');
-if (whatsappBtn) {
-    whatsappBtn.onclick = () => {
-        if (cart.length === 0) return alert("Votre panier est vide!");
-        let message = "Salam ici.c'est.PARIS! Je souhaite commander:\n\n";
-        cart.forEach((item, i) => message += `${i + 1}. ${item.name} - ${item.displayPrice}\n`);
-        const total = cart.reduce((sum, item) => sum + item.price, 0);
-        message += `\nTotal: ${total.toLocaleString()} DA\n\nMerci de me confirmer la livraison.`;
-        window.open(`https://wa.me/213774743573?text=${encodeURIComponent(message)}`, '_blank');
-    };
-}
-
-// --- MODAL ---
-const modal = document.getElementById('product-modal');
-const closeModal = document.querySelector('.close-modal');
-let currentModalProductId = null;
-
-function openProductModal(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    currentModalProductId = productId;
-    document.getElementById('modal-image').src = product.image;
-    document.getElementById('modal-name').textContent = product.name;
-    document.getElementById('modal-category').textContent = product.category;
-    document.getElementById('modal-price').textContent = product.displayPrice;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-document.querySelector('.add-to-cart-btn').onclick = () => {
-    if (currentModalProductId) {
-        addToCart(currentModalProductId);
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-};
-
-if (closeModal) closeModal.onclick = () => { modal.classList.remove('active'); document.body.style.overflow = 'auto'; };
-window.onclick = (event) => { if (event.target == modal) { modal.classList.remove('active'); document.body.style.overflow = 'auto'; } };
-
-// --- INITIALIZE ---
-document.addEventListener('DOMContentLoaded', () => {
-    renderProducts();
-    triggerReveal();
-});
-

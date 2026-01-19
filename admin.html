@@ -1,119 +1,213 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ici.c'est.PARIS | Administration</title>
+    <title>ici.c'est.PARIS | Administration Sécurisée</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        .admin-page {
-            padding: 80px 40px;
-            max-width: 800px;
-            margin: 0 auto;
+        .admin-auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--paris-blue);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-card {
             background: white;
-            margin-top: 50px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
         }
 
-        .admin-page h1 {
+        .auth-card h2 {
+            font-family: var(--font-heading);
             margin-bottom: 20px;
-            font-weight: 900;
-            font-family: 'Playfair Display', serif;
-            color: var(--shelby-green);
         }
 
-        .admin-form {
-            display: grid;
-            gap: 20px;
-        }
-
-        .admin-form input,
-        .admin-form select {
+        .auth-card input {
+            width: 100%;
             padding: 15px;
-            background: #f9f9f9;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .admin-container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        .product-manager {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+        }
+
+        .current-products {
+            height: 600px;
+            overflow-y: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
             border: 1px solid #eee;
-            font-family: inherit;
-            font-weight: 600;
-            border-radius: 4px;
         }
 
-        .admin-btn {
-            padding: 20px;
-            background: var(--shelby-green);
-            color: var(--white);
-            border: none;
-            font-weight: 900;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .code-output {
-            background: #f4f4f4;
-            padding: 20px;
-            margin-top: 40px;
-            white-space: pre-wrap;
-            font-family: monospace;
-            border: 1px solid #ccc;
-        }
-
-        .copy-btn {
-            margin-top: 10px;
-            background: #333;
-            color: white;
-            border: none;
+        .p-item {
+            display: flex;
+            justify-content: space-between;
             padding: 10px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .p-item:hover {
+            background: #f9f9f9;
+        }
+
+        .delete-btn {
+            color: red;
             cursor: pointer;
-            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .discount-badge {
+            background: var(--paris-red);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="admin-page">
-        <h1>Gestion des Produits</h1>
-        <p>Utilisez ce formulaire pour générer le code de vos nouveaux produits.</p>
-        <br>
-        <div class="admin-form">
-            <input type="text" id="p-name" placeholder="Nom du Produit (ex: Nike Dunk Low)">
-            <select id="p-category">
-                <option value="Homme">Homme</option>
-                <option value="Chaussures">Chaussures</option>
-                <option value="Accessoires">Accessoires</option>
-                <option value="Nouveautés">Nouveautés</option>
-            </select>
-            <input type="number" id="p-price" placeholder="Prix en DA (ex: 15000)">
-            <input type="text" id="p-image" placeholder="Nom de l'image (ex: shoes.jpg)">
-            <button class="admin-btn" onclick="generateCode()">Générer le Code Produit</button>
-        </div>
 
-        <div id="output-container" style="display:none;">
-            <div class="code-output" id="code-output"></div>
-            <p>Copiez ce code et collez-le dans la liste <b>products</b> du fichier <b>script.js</b>!</p>
+    <!-- Simple Password Protection -->
+    <div id="auth-overlay" class="admin-auth-overlay">
+        <div class="auth-card">
+            <h2>Accès Admin</h2>
+            <input type="password" id="admin-pass" placeholder="Mot de passe">
+            <button class="icon-btn" onclick="checkAuth()">Se Connecter</button>
+            <p id="auth-error" style="color:red; margin-top:10px; display:none;">Accès refusé.</p>
         </div>
     </div>
 
+    <div id="admin-content" class="admin-container">
+        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
+            <h1 style="font-family: var(--font-heading); color: var(--paris-blue);">Gestion ici.c'est.PARIS</h1>
+            <button class="icon-btn" style="background:var(--paris-red)"
+                onclick="location.reload()">Déconnexion</button>
+        </header>
+
+        <div class="product-manager">
+            <!-- Add Form -->
+            <div class="admin-page" style="margin:0; width:100%;">
+                <h3>Ajouter un Produit</h3>
+                <br>
+                <div class="admin-form">
+                    <input type="text" id="p-name" placeholder="Nom du Produit">
+                    <select id="p-category">
+                        <option value="Homme">Homme</option>
+                        <option value="Chaussures">Chaussures</option>
+                        <option value="Accessoires">Accessoires</option>
+                        <option value="Nouveautés">Nouveautés</option>
+                    </select>
+                    <input type="number" id="p-price" placeholder="Prix (ex: 38500)">
+                    <input type="number" id="p-old-price" placeholder="Prix Original (facultatif)">
+                    <input type="text" id="p-image" placeholder="Image URL ou nom (ex: nike.jpg)">
+                    <button class="admin-btn" onclick="saveToFirebase()">Publier sur le Site</button>
+                </div>
+            </div>
+
+            <!-- List View -->
+            <div class="current-products">
+                <h3>Produits en Ligne</h3>
+                <br>
+                <div id="p-list-sync">
+                    <!-- Products from Firebase -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
     <script>
-        function generateCode() {
+        // --- ADMIN LOGIN LOGIC ---
+        function checkAuth() {
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === "paris2026") { // Temporary easy password
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                loadFirebaseData();
+            } else {
+                document.getElementById('auth-error').style.display = 'block';
+            }
+        }
+
+        // --- FIREBASE ADMIN OPS ---
+        function saveToFirebase() {
             const name = document.getElementById('p-name').value;
-            const category = document.getElementById('p-category').value;
-            const price = document.getElementById('p-price').value;
-            const image = document.getElementById('p-image').value;
-            const displayPrice = parseInt(price).toLocaleString() + " DA";
+            const cat = document.getElementById('p-category').value;
+            const price = parseInt(document.getElementById('p-price').value);
+            const oldPrice = parseInt(document.getElementById('p-old-price').value) || null;
+            const img = document.getElementById('p-image').value;
 
-            const code = `{
-    id: Date.now(),
-    name: "${name}",
-    category: "${category}",
-    price: ${price},
-    displayPrice: "${displayPrice}",
-    image: "images/${image}"
-},`;
+            if (!name || !price || !img) return alert("Veuillez remplir les champs obligatoires.");
 
-            document.getElementById('code-output').textContent = code;
-            document.getElementById('output-container').style.display = 'block';
+            const newProductRef = database.ref('products').push();
+            newProductRef.set({
+                id: Date.now(),
+                name: name,
+                category: cat,
+                price: price,
+                oldPrice: oldPrice,
+                displayPrice: price.toLocaleString() + " DA",
+                image: img
+            }).then(() => {
+                alert("Produit ajouté avec succès !");
+                document.querySelectorAll('.admin-form input').forEach(i => i.value = '');
+            });
+        }
+
+        function loadFirebaseData() {
+            database.ref('products').on('value', (snapshot) => {
+                const data = snapshot.val();
+                const list = document.getElementById('p-list-sync');
+                list.innerHTML = '';
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        const p = data[key];
+                        list.innerHTML += `
+                            <div class="p-item">
+                                <div>
+                                    <b>${p.name}</b><br>
+                                    <small>${p.displayPrice} ${p.oldPrice ? '<span class="discount-badge">Promotion</span>' : ''}</small>
+                                </div>
+                                <span class="delete-btn" onclick="deleteProduct('${key}')">❌ Effacer</span>
+                            </div>
+                        `;
+                    });
+                }
+            });
+        }
+
+        function deleteProduct(key) {
+            if (confirm("Supprimer ce produit définitivement ?")) {
+                database.ref('products/' + key).remove();
+            }
         }
     </script>
 </body>
