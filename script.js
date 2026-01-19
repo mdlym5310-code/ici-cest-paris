@@ -11,7 +11,7 @@ const products = [
         name: "Slide ✔️ UPTM Pointure 46 t",
         category: "Shoes",
         price: "20,500 DA",
-        image: "images/shoes_orange.png"
+        image: "images/shoes_orange.jpg"
     }
 ];
 
