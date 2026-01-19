@@ -4,53 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DLMSTREET | Premium Brand Store Algeria</title>
+    <title>ici.c'est.PARIS | Boutique Officielle</title>
     <meta name="description"
-        content="DLMSTREET - Algeria's premier store for original brands. Inspired by global design, made for the local market.">
+        content="ici.c'est.PARIS - Votre boutique premium pour les marques internationales originales en Algérie.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:wght@700;900&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
     <header class="navbar">
-        <div class="nav-container">
-            <div class="logo">DLMSTREET</div>
+        <div class="nav-container centered-nav">
+            <div class="logo">ici.c'est.PARIS</div>
             <nav class="nav-links">
-                <a href="#" data-category="all">All</a>
-                <a href="#" data-category="Men">Men</a>
-                <a href="#" data-category="Women">Women</a>
-                <a href="#" data-category="Kids">Kids</a>
-                <a href="#" data-category="Shoes">Shoes</a>
-                <a href="#" data-category="Sale" class="sale-link">Sale</a>
+                <a href="#" data-category="all">Boutique</a>
+                <a href="#" data-category="Men">Homme</a>
+                <a href="#" data-category="Shoes">Chaussures</a>
+                <a href="#" data-category="Accessoires">Accessoires</a>
+                <a href="#" data-category="Sale" class="sale-link">Nouveautés</a>
             </nav>
             <div class="nav-icons">
                 <div class="search-bar">
-                    <input type="text" id="search-input" placeholder="Search products...">
+                    <input type="text" id="search-input" placeholder="Rechercher...">
                 </div>
-                <button class="icon-btn" id="cart-btn">Cart (0)</button>
+                <button class="icon-btn" id="cart-btn">Panier (0)</button>
             </div>
         </div>
     </header>
 
     <main>
         <section class="hero reveal">
-            <video autoplay muted loop playsinline class="hero-video">
-                <source
-                    src="https://assets.mixkit.co/videos/preview/mixkit-man-running-on-the-beach-at-sunset-4015-large.mp4"
-                    type="video/mp4">
-            </video>
-            <div class="hero-content">
-                <h1>MOVE LIKE DLM</h1>
-                <p>Premium original brands for the bold spirit.</p>
-                <button class="cta-btn">Shop Now</button>
+            <!-- Shelby Style Slider -->
+            <div class="slider-container">
+                <div class="slide active"
+                    style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2070')">
+                    <div class="hero-content">
+                        <h2>BOUTIQUE OFFICIELLE</h2>
+                        <p>Les plus grandes marques internationales enfin disponibles.</p>
+                        <button class="cta-btn">DÉCOUVRIR</button>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="featured-products reveal">
             <div class="section-header">
-                <h2>Featured Products</h2>
+                <h2>Nos Nouveautés</h2>
             </div>
             <div class="product-grid" id="product-grid">
                 <!-- Products will be injected here by JS -->
@@ -61,12 +63,13 @@
     <footer>
         <div class="footer-container">
             <div class="footer-column">
-                <h3>DLMSTREET</h3>
-                <p>Original Brands Store | Algeria</p>
+                <h3>ici.c'est.PARIS</h3>
+                <p>Boutique Premium | 100% Original</p>
+                <p>Algérie</p>
             </div>
             <div class="footer-column">
-                <p>&copy; 2026 DLMSTREET. All rights reserved.</p>
-                <a href="admin.html" class="admin-link">Store Admin</a>
+                <p>&copy; 2026 ici.c'est.PARIS. Tous droits réservés.</p>
+                <a href="admin.html" class="admin-link">Administration</a>
             </div>
         </div>
     </footer>
@@ -74,7 +77,7 @@
     <!-- Shopping Cart Drawer -->
     <div id="cart-drawer" class="cart-drawer">
         <div class="cart-header">
-            <h2>Your Bag</h2>
+            <h2>Votre Panier</h2>
             <span class="close-cart">&times;</span>
         </div>
         <div id="cart-items" class="cart-items">
@@ -85,7 +88,7 @@
                 <span>Total:</span>
                 <span id="cart-total-amount">0 DA</span>
             </div>
-            <button id="whatsapp-checkout" class="checkout-btn">Order via WhatsApp</button>
+            <button id="whatsapp-checkout" class="checkout-btn">Commander via WhatsApp</button>
         </div>
     </div>
 
