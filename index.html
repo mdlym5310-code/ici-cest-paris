@@ -18,7 +18,9 @@
 <body>
     <header class="navbar">
         <div class="nav-container centered-nav">
-            <div class="logo">ici.c'est.PARIS</div>
+            <div class="logo">
+                <span class="logo-blue">ici.c'est.</span><span class="logo-red">PARIS</span>
+            </div>
             <nav class="nav-links">
                 <a href="#" data-category="all">Boutique</a>
                 <a href="#" data-category="Men">Homme</a>
@@ -37,16 +39,36 @@
 
     <main>
         <section class="hero reveal">
-            <!-- Shelby Style Slider -->
-            <div class="slider-container">
-                <div class="slide active"
-                    style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2070')">
-                    <div class="hero-content">
-                        <h2>BOUTIQUE OFFICIELLE</h2>
-                        <p>Les plus grandes marques internationales enfin disponibles.</p>
-                        <button class="cta-btn">DÉCOUVRIR</button>
+            <!-- Full Dynamic Slider -->
+            <div class="slider" id="main-slider">
+                <div class="slides">
+                    <div class="slide active"
+                        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2070')">
+                        <div class="hero-content">
+                            <h2>BOUTIQUE OFFICIELLE</h2>
+                            <p>Les plus grandes marques internationales enfin disponibles.</p>
+                            <button class="cta-btn">DÉCOUVRIR</button>
+                        </div>
+                    </div>
+                    <div class="slide"
+                        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=2070')">
+                        <div class="hero-content">
+                            <h2>QUALITÉ SUPÉRIEURE</h2>
+                            <p>Des produits 100% authentiques sélectionnés pour vous.</p>
+                            <button class="cta-btn">EXPLORER</button>
+                        </div>
+                    </div>
+                    <div class="slide"
+                        style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1445205170230-053b830c6050?auto=format&fit=crop&q=80&w=2071')">
+                        <div class="hero-content">
+                            <h2>LIVRAISON PARTOUT</h2>
+                            <p>Commandez vos favoris et nous livrons à votre porte.</p>
+                            <button class="cta-btn">COMMANDER</button>
+                        </div>
                     </div>
                 </div>
+                <!-- Control dots -->
+                <div class="slider-dots" id="slider-dots"></div>
             </div>
         </section>
 
@@ -110,6 +132,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Notifications Container -->
+    <div id="notification-container" class="notification-container"></div>
 
     <script src="script.js"></script>
 </body>

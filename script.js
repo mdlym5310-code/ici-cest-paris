@@ -5,7 +5,7 @@ const products = [
         category: "Men",
         price: 38500,
         displayPrice: "38,500 DA",
-        image: "images/lacoste_grey.jpg" // User should rename/upload accordingly
+        image: "images/lacoste_grey.jpg"
     },
     {
         id: 2,
@@ -85,6 +85,37 @@ function renderProducts(filteredProducts = products) {
     setTimeout(triggerReveal, 100);
 }
 
+// --- SLIDER SYSTEM ---
+let currentSlide = 0;
+const slidesContainer = document.querySelector('.slides');
+const dotsContainer = document.getElementById('slider-dots');
+const slides = document.querySelectorAll('.slide');
+
+if (dotsContainer) {
+    slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.classList.add('dot');
+        if (i === 0) dot.classList.add('active');
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+    });
+}
+
+function goToSlide(index) {
+    currentSlide = index;
+    slidesContainer.style.transform = `translateX(-${currentSlide * 33.333}%)`;
+    document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+    });
+}
+
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % 3;
+    goToSlide(currentSlide);
+}
+
+setInterval(nextSlide, 5000); // Auto-play every 5s
+
 // --- DYNAMIC SCROLL REVEAL ---
 function triggerReveal() {
     const reveals = document.querySelectorAll('.reveal, .reveal-item');
@@ -96,18 +127,33 @@ function triggerReveal() {
     reveals.forEach(reveal => observer.observe(reveal));
 }
 
+// --- NOTIFICATIONS ---
+function showNotification(message) {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.classList.add('notification');
+    notification.innerHTML = `<span>✔️</span> ${message}`;
+    container.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
+
 // --- CATEGORY FILTERING ---
 document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
         const category = e.target.getAttribute('data-category');
         document.querySelectorAll('.nav-links a').forEach(l => l.style.color = "var(--cod-gray)");
-        e.target.style.color = "var(--shelby-green)";
+        e.target.style.color = "var(--paris-red)";
 
         if (category === 'all') {
             renderProducts(products);
         } else {
-            const filtered = products.filter(p => p.category === category);
+            const filtered = products.filter(p =>
+                (category === 'Men' && p.category === 'Men') ||
+                (category === 'Shoes' && p.category === 'Shoes') ||
+                (category === 'Accessoires' && p.category === 'Accessoires') ||
+                (category === 'Sale' && p.name.toLowerCase().includes('nouveauté'))
+            );
             renderProducts(filtered);
         }
     });
@@ -141,7 +187,10 @@ function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     cart.push(product);
     updateCartUI();
-    if (!cartDrawer.classList.contains('active')) toggleCart();
+    showNotification(`${product.name} ajouté au panier !`);
+    if (!cartDrawer.classList.contains('active')) {
+        setTimeout(toggleCart, 500);
+    }
 }
 
 function removeFromCart(index) {
@@ -214,6 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 50) navbar.style.boxShadow = '0 5px 20px rgba(0,0,0,0.05)';
+    if (window.scrollY > 50) navbar.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
     else navbar.style.boxShadow = 'none';
 });
