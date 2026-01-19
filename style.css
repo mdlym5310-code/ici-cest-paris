@@ -20,6 +20,23 @@ body {
     overflow-x: hidden;
 }
 
+/* --- ANIMATIONS --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-card {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
 /* Navbar */
 .navbar {
     position: sticky;
@@ -54,8 +71,8 @@ body {
     text-decoration: none;
     color: var(--cod-gray);
     font-weight: 600;
-    margin: 0 20px;
-    font-size: 16px;
+    margin: 0 15px;
+    font-size: 15px;
     transition: opacity 0.2s;
 }
 
@@ -94,8 +111,7 @@ body {
 .hero {
     height: 80vh;
     background: var(--mercury);
-    /* Placeholder for image */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url('https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=2070');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&q=80&w=2070');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -114,8 +130,6 @@ body {
 
 .hero-content p {
     font-size: 20px;
-    margin-bottom: 300px;
-    /* Space for CTA at bottom if needed or adjust */
     margin-bottom: 30px;
 }
 
@@ -157,7 +171,6 @@ body {
 
 .product-card {
     cursor: pointer;
-    transition: transform 0.3s;
 }
 
 .product-image {
@@ -197,22 +210,98 @@ body {
     font-size: 16px;
 }
 
-/* Footer */
-footer {
-    border-top: 1px solid var(--mercury);
-    padding: 60px 40px;
+/* --- CART DRAWER --- */
+.cart-drawer {
+    position: fixed;
+    right: -400px;
+    top: 0;
+    width: 400px;
+    height: 100%;
     background: var(--white);
+    z-index: 3000;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    transition: right 0.4s ease;
+    display: flex;
+    flex-direction: column;
 }
 
-.footer-container {
-    max-width: 1400px;
-    margin: 0 auto;
+.cart-drawer.active {
+    right: 0;
+}
+
+.cart-header {
+    padding: 25px;
+    border-bottom: 1px solid var(--mercury);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* Modal Base */
+.cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.cart-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.cart-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    background: var(--mercury);
+}
+
+.cart-item-info h4 {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.cart-item-info p {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.remove-item {
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: underline;
+    color: #888;
+}
+
+.cart-footer {
+    padding: 25px;
+    border-top: 1px solid var(--mercury);
+}
+
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.checkout-btn {
+    width: 100%;
+    background: #25D366;
+    /* WhatsApp Green */
+    color: var(--white);
+    border: none;
+    padding: 18px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* --- MODAL --- */
 .modal {
     display: none;
     position: fixed;
@@ -251,10 +340,8 @@ footer {
     transform: translateY(0);
 }
 
-.close-modal {
-    position: absolute;
-    right: 25px;
-    top: 15px;
+.close-modal,
+.close-cart {
     font-size: 35px;
     cursor: pointer;
     color: var(--cod-gray);
@@ -280,7 +367,6 @@ footer {
     transition: transform 0.3s ease;
 }
 
-/* Zoom Effect */
 .modal-image-container:hover img {
     transform: scale(1.5);
 }
@@ -319,18 +405,27 @@ footer {
     font-weight: 700;
     font-size: 16px;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
-.add-to-cart-btn:hover {
-    background: #333;
+/* Footer */
+footer {
+    border-top: 1px solid var(--mercury);
+    padding: 60px 40px;
+    background: var(--white);
+}
+
+.footer-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .nav-links {
         display: none;
-        /* simple mobile hide for now */
     }
 
     .hero-content h1 {
@@ -338,8 +433,13 @@ footer {
     }
 
     .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+
+    .cart-drawer {
+        width: 100%;
+        right: -100%;
     }
 
     .modal-body {

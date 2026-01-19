@@ -18,10 +18,12 @@
         <div class="nav-container">
             <div class="logo">DLMSTREET</div>
             <nav class="nav-links">
-                <a href="#men">Men</a>
-                <a href="#women">Women</a>
-                <a href="#kids">Kids</a>
-                <a href="#sale" class="sale-link">Sale</a>
+                <a href="#" data-category="all">All</a>
+                <a href="#" data-category="Men">Men</a>
+                <a href="#" data-category="Women">Women</a>
+                <a href="#" data-category="Kids">Kids</a>
+                <a href="#" data-category="Shoes">Shoes</a>
+                <a href="#" data-category="Sale" class="sale-link">Sale</a>
             </nav>
             <div class="nav-icons">
                 <div class="search-bar">
@@ -62,6 +64,24 @@
             </div>
         </div>
     </footer>
+
+    <!-- Shopping Cart Drawer -->
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="cart-header">
+            <h2>Your Bag</h2>
+            <span class="close-cart">&times;</span>
+        </div>
+        <div id="cart-items" class="cart-items">
+            <!-- Items added here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-amount">0 DA</span>
+            </div>
+            <button id="whatsapp-checkout" class="checkout-btn">Order via WhatsApp</button>
+        </div>
+    </div>
 
     <!-- Product Detail Modal -->
     <div id="product-modal" class="modal">
