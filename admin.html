@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLMSTREET | Store Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-page {
+            padding: 100px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .admin-page h1 {
+            margin-bottom: 30px;
+            font-weight: 900;
+        }
+
+        .admin-form {
+            display: grid;
+            gap: 20px;
+        }
+
+        .admin-form input,
+        .admin-form select {
+            padding: 15px;
+            background: var(--mercury);
+            border: none;
+            font-family: inherit;
+            font-weight: 700;
+        }
+
+        .admin-btn {
+            padding: 20px;
+            background: var(--cod-gray);
+            color: var(--white);
+            border: none;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .code-output {
+            background: #f4f4f4;
+            padding: 20px;
+            margin-top: 40px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            border: 1px solid #ccc;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-page">
+        <h1>Store Product Admin</h1>
+        <p>Fill out this form to generate the code for your new products.</p>
+        <br>
+        <div class="admin-form">
+            <input type="text" id="p-name" placeholder="Product Name (e.g. Nike Dunk Low)">
+            <select id="p-category">
+                <option value="Men">Men</option>
+                <option value="Women">Women</option>
+                <option value="Shoes">Shoes</option>
+                <option value="Sale">Sale</option>
+            </select>
+            <input type="number" id="p-price" placeholder="Price in Number (e.g. 15000)">
+            <input type="text" id="p-image" placeholder="Image Filename (e.g. shoes.jpg)">
+            <button class="admin-btn" onclick="generateCode()">Generate Product Code</button>
+        </div>
+
+        <div id="output-container" style="display:none;">
+            <div class="code-output" id="code-output"></div>
+            <p>Copy the code above and paste it inside the <b>products</b> list in your <b>script.js</b> file!</p>
+        </div>
+    </div>
+
+    <script>
+        function generateCode() {
+            const name = document.getElementById('p-name').value;
+            const category = document.getElementById('p-category').value;
+            const price = document.getElementById('p-price').value;
+            const image = document.getElementById('p-image').value;
+            const displayPrice = parseInt(price).toLocaleString() + " DA";
+
+            const code = `{
+    id: Date.now(),
+    name: "${name}",
+    category: "${category}",
+    price: ${price},
+    displayPrice: "${displayPrice}",
+    image: "images/${image}"
+},`;
+
+            document.getElementById('code-output').textContent = code;
+            document.getElementById('output-container').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>
