@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DLMSTREET | Premium Brand Store Algeria</title>
-    <meta name="description" content="DLMSTREET - Algeria's premier store for original brands. Inspired by global design, made for the local market.">
+    <meta name="description"
+        content="DLMSTREET - Algeria's premier store for original brands. Inspired by global design, made for the local market.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <header class="navbar">
         <div class="nav-container">
@@ -22,7 +25,7 @@
             </nav>
             <div class="nav-icons">
                 <div class="search-bar">
-                    <input type="text" placeholder="Search">
+                    <input type="text" id="search-input" placeholder="Search products...">
                 </div>
                 <button class="icon-btn" id="cart-btn">Cart (0)</button>
             </div>
@@ -60,6 +63,26 @@
         </div>
     </footer>
 
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-body">
+                <div class="modal-image-container">
+                    <img id="modal-image" src="" alt="">
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-name"></h2>
+                    <p id="modal-category" class="category-pill"></p>
+                    <div id="modal-price" class="price-large"></div>
+                    <p class="modal-description">Authentic quality, premium finish. DLMSTREET exclusivity.</p>
+                    <button class="add-to-cart-btn">Add to Bag</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
+
 </html>

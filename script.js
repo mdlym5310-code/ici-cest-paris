@@ -15,12 +15,18 @@ const products = [
     }
 ];
 
-function renderProducts() {
+// --- RENDERING PRODUCTS ---
+function renderProducts(filteredProducts = products) {
     const productGrid = document.getElementById('product-grid');
     if (!productGrid) return;
 
-    productGrid.innerHTML = products.map(product => `
-        <div class="product-card">
+    if (filteredProducts.length === 0) {
+        productGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 40px;">No products found for this search.</p>`;
+        return;
+    }
+
+    productGrid.innerHTML = filteredProducts.map(product => `
+        <div class="product-card" onclick="openProductModal(${product.id})">
             <div class="product-image">
                 <img src="${product.image}" alt="${product.name}" onerror="this.src='https://placehold.co/600x600?text=Upload+Photo'" loading="lazy">
             </div>
@@ -33,7 +39,52 @@ function renderProducts() {
     `).join('');
 }
 
-// Initial Render
+// --- SEARCH FUNCTIONALITY ---
+const searchInput = document.getElementById('search-input');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = products.filter(p =>
+            p.name.toLowerCase().includes(searchTerm) ||
+            p.category.toLowerCase().includes(searchTerm)
+        );
+        renderProducts(filtered);
+    });
+}
+
+// --- PRODUCT MODAL LOGIC ---
+const modal = document.getElementById('product-modal');
+const closeModal = document.querySelector('.close-modal');
+
+function openProductModal(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    document.getElementById('modal-image').src = product.image;
+    document.getElementById('modal-name').textContent = product.name;
+    document.getElementById('modal-category').textContent = product.category;
+    document.getElementById('modal-price').textContent = product.price;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Stop scrolling behind modal
+}
+
+if (closeModal) {
+    closeModal.onclick = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    };
+}
+
+// Close modal when clicking outside
+window.onclick = (event) => {
+    if (event.target == modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+};
+
+// --- INITIALIZE ---
 document.addEventListener('DOMContentLoaded', () => {
     renderProducts();
 });
