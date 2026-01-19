@@ -22,7 +22,7 @@ To deploy your site, follow these simple steps:
    git add .
    git commit -m "Initial commit of DLMSTREET"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/dlmstreet.git
+   git remote add origin https://github.com/mdlym5310/dlmstreet.git
    git push -u origin main
    ```
 3. Go to **Settings > Pages** on your GitHub repository.

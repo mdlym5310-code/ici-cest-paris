@@ -40,13 +40,25 @@ const products = [
         category: "Women's Sport",
         price: "11,500 DA",
         image: "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&q=80&w=1000"
+    },
+    {
+        id: 7,
+        name: "Nouveauté ensemble 🐊 Taille S,L,XXL",
+        category: "Men",
+        price: "38,500 DA", // 
+        image: "images/lacoste_grey.jpg" //
+    },
+    {
+        id: 8,
+        name: "Slide ✔️ UPTM Pointure 46 t",
+        category: "Shoes",
+        price: "20,500 DA",
+        image: "images/shoes_orange.png"
     }
 ];
-
 function renderProducts() {
     const productGrid = document.getElementById('product-grid');
     if (!productGrid) return;
-
     productGrid.innerHTML = products.map(product => `
         <div class="product-card">
             <div class="product-image">
