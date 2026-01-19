@@ -108,20 +108,23 @@ function sendToWhatsApp(productId) {
     const product = products.find(p => p.id === productId) || fallbackProducts.find(p => p.id === productId);
     if (!product) return;
 
+    // Exact phrase requested by user: salam ici.c'est.PARIS khasni hed product
     const message = `salam ici.c'est.PARIS khasni hed product: ${product.name} (${product.displayPrice})`;
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/213774743573?text=${encoded}`, '_blank');
 }
 
-// --- NOTIFICATIONS ---
-function showNotification(message) {
-    const container = document.getElementById('notification-container');
-    if (!container) return;
-    const notification = document.createElement('div');
-    notification.classList.add('notification');
-    notification.innerHTML = `<span>✔️</span> ${message}`;
-    container.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
+// Global checkout button in cart drawer
+const mainCheckoutBtn = document.getElementById('whatsapp-checkout');
+if (mainCheckoutBtn) {
+    mainCheckoutBtn.onclick = () => {
+        if (cart.length === 0) return alert("Votre panier est vide!");
+        let message = "salam ici.c'est.PARIS khasni hed products:\n\n";
+        cart.forEach((item, i) => message += `${i + 1}. ${item.name} (${item.displayPrice})\n`);
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        message += `\nTotal: ${total.toLocaleString()} DA`;
+        window.open(`https://wa.me/213774743573?text=${encodeURIComponent(message)}`, '_blank');
+    };
 }
 
 // --- MODAL ---
@@ -139,8 +142,64 @@ function openProductModal(productId) {
 
     // Update the Add to Cart button to be a direct WhatsApp trigger as per user request
     const addBtn = document.querySelector('.add-to-cart-btn');
-    addBtn.textContent = "COMMANDER VIA WHATSAPP";
+    addBtn.textContent = "COMMANDER EXPRESS (WHATSAPP)";
     addBtn.onclick = () => sendToWhatsApp(productId);
+
+    // Also allow adding to the "real" cart if they want to buy multiple
+    const secondaryAdd = document.createElement('button');
+    secondaryAdd.className = 'icon-btn';
+    secondaryAdd.style.marginTop = '10px';
+    secondaryAdd.style.width = '100%';
+    secondaryAdd.style.background = 'white';
+    secondaryAdd.style.color = 'var(--paris-blue)';
+    secondaryAdd.style.border = '2px solid var(--paris-blue)';
+    secondaryAdd.textContent = "AJOUTER AU PANIER";
+    secondaryAdd.onclick = () => {
+        addToCart(productId);
+        modal.classList.remove('active');
+    };
+
+    // Clear old secondaries if any
+    const modalInfo = document.querySelector('.modal-info');
+    const existing = modalInfo.querySelector('.extra-btn');
+    if (existing) existing.remove();
+    secondaryAdd.classList.add('extra-btn');
+    modalInfo.appendChild(secondaryAdd);
+}
+
+function addToCart(productId) {
+    const product = products.find(p => p.id === productId) || fallbackProducts.find(p => p.id === productId);
+    cart.push(product);
+    updateCartUI();
+    showNotification(`${product.name} ajouté au panier !`);
+    if (!document.getElementById('cart-drawer').classList.contains('active')) {
+        setTimeout(() => document.getElementById('cart-drawer').classList.add('active'), 500);
+    }
+}
+
+function updateCartUI() {
+    const cartBtn = document.getElementById('cart-btn');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotalElement = document.getElementById('cart-total-amount');
+
+    if (cartBtn) cartBtn.textContent = `Panier (${cart.length})`;
+    cartItemsContainer.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+            <img src="${item.image}" alt="${item.name}">
+            <div class="cart-item-info">
+                <h4>${item.name}</h4>
+                <p>${item.displayPrice}</p>
+                <span class="remove-item" onclick="removeFromCart(${index})">Supprimer</span>
+            </div>
+        </div>
+    `).join('');
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    cartTotalElement.textContent = `${total.toLocaleString()} DA`;
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartUI();
 }
 
 // --- DYNAMIC REVEAL ---
