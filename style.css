@@ -74,6 +74,13 @@ body::before {
 .loading-screen.fade-out {
     opacity: 0;
     pointer-events: none;
+    transform: scale(1.1);
+    /* Subtle zoom out effect for luxury feel */
+}
+
+.loading-screen.fade-out .loader {
+    transform: translateY(-20px);
+    transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .loader {
@@ -213,6 +220,23 @@ body::before {
 
 .nav-links a:hover {
     color: var(--paris-red);
+}
+
+.catalog-badge {
+    background: var(--paris-blue);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    vertical-align: middle;
+    margin-left: 5px;
+    font-weight: 800;
+    transition: all 0.3s;
+}
+
+.nav-links a:hover .catalog-badge {
+    background: var(--paris-red);
+    transform: translateY(-2px);
 }
 
 .nav-icons {
@@ -1451,4 +1475,37 @@ html {
         grid-template-columns: 1fr;
         padding: 40px 20px 20px;
     }
+}
+
+/* Share Button */
+.share-btn {
+    background: white;
+    color: var(--paris-blue);
+    border: 2px solid #eee;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.share-btn:hover {
+    background: #f8f8f8;
+    border-color: var(--paris-blue);
+    transform: translateY(-2px);
+}
+
+.share-btn svg {
+    transition: transform 0.3s;
+}
+
+.share-btn:hover svg {
+    transform: translateY(-3px);
 }

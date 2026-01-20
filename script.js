@@ -329,6 +329,10 @@ function renderProducts(pList) {
 
     if (emptyState) emptyState.style.display = 'none';
 
+    // Update Catalog Count Badge
+    const catalogCount = document.getElementById('product-total-count');
+    if (catalogCount) catalogCount.textContent = pList.length;
+
     // Check local storage for wishlist
     const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
 
@@ -887,6 +891,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (whatsappCheckout) {
         whatsappCheckout.onclick = () => {
             sendCartToWhatsApp();
+        };
+    }
+
+    // Share button
+    const shareBtn = document.getElementById('share-product-btn');
+    if (shareBtn) {
+        shareBtn.onclick = () => {
+            const productName = document.getElementById('modal-name').textContent;
+            const shareData = {
+                title: `ici.c'est.PARIS | ${productName}`,
+                text: `Découvrez ${productName} chez ici.c'est.PARIS - Boutique Premium en Algérie 🇩🇿`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => showNotification("Merci du partage ! ✨", "success"))
+                    .catch((err) => console.log('Error sharing:', err));
+            } else {
+                // Fallback: Copy to clipboard
+                navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`)
+                    .then(() => showNotification("Lien copié ! Partagez-le avec vos amis 🔗", "success"))
+                    .catch(() => showNotification("Impossible de copier le lien", "error"));
+            }
         };
     }
 
