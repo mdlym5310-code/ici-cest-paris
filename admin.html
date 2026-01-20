@@ -162,13 +162,65 @@
         };
         
         let database;
+        
+        // Check if Firebase config is still using placeholder values
+        const isPlaceholderConfig = firebaseConfig.apiKey.includes('EXAMPLE') || 
+                                    firebaseConfig.apiKey === 'AIzaSyAs-EXAMPLE-PLACEHOLDER';
+        
+        if (isPlaceholderConfig) {
+            console.warn("⚠️ Firebase config uses placeholder values!");
+            console.log("📝 Please update firebaseConfig in admin.html with your actual Firebase credentials");
+            
+            // Show warning in UI
+            setTimeout(() => {
+                const adminWrap = document.getElementById('admin-interface');
+                if (adminWrap) {
+                    const warning = document.createElement('div');
+                    warning.style.cssText = `
+                        background: #fff3cd;
+                        border: 2px solid #ffc107;
+                        color: #856404;
+                        padding: 15px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                        font-weight: 700;
+                    `;
+                    warning.innerHTML = `
+                        ⚠️ <strong>Firebase non configuré!</strong><br>
+                        Les produits ne seront pas sauvegardés en ligne tant que Firebase n'est pas configuré.<br>
+                        Consultez FIREBASE_SETUP.md pour les instructions.
+                    `;
+                    adminWrap.insertBefore(warning, adminWrap.firstChild);
+                }
+            }, 500);
+        }
+        
         try {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-            console.log("✅ Firebase Admin initialized successfully");
+            if (typeof firebase !== 'undefined') {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                console.log("✅ Firebase Admin initialized successfully");
+                
+                // Test connection
+                database.ref('.info/connected').on('value', (snap) => {
+                    if (snap.val() === true) {
+                        console.log("✅ Connected to Firebase");
+                    } else {
+                        console.warn("⚠️ Not connected to Firebase");
+                    }
+                });
+            } else {
+                console.error("❌ Firebase SDK not loaded");
+                alert("⚠️ Firebase SDK non chargé. Vérifiez votre connexion internet.");
+            }
         } catch (error) {
             console.error("❌ Firebase initialization error:", error);
-            alert("⚠️ Erreur d'initialisation Firebase. Vérifiez votre configuration.");
+            if (error.code === 'app/duplicate-app') {
+                console.log("ℹ️ Firebase app already initialized");
+                database = firebase.database();
+            } else {
+                alert("⚠️ Erreur d'initialisation Firebase: " + error.message);
+            }
         }
 
         function checkAuth() {
@@ -217,7 +269,8 @@
 
             database.ref('products/' + id).set(product)
                 .then(() => {
-                    alert("✅ Produit ajouté avec succès !");
+                    console.log("✅ Product saved to Firebase:", product);
+                    alert("✅ Produit ajouté avec succès !\n\nLe produit apparaîtra sur le site dans quelques secondes.");
                     // Reset form
                     document.getElementById('p-name').value = '';
                     document.getElementById('p-price').value = '';
@@ -225,10 +278,28 @@
                     document.getElementById('p-sizes').value = '';
                     btn.textContent = originalText;
                     btn.disabled = false;
+                    
+                    // Verify the product was saved
+                    setTimeout(() => {
+                        database.ref('products/' + id).once('value', (snap) => {
+                            if (snap.exists()) {
+                                console.log("✅ Verification: Product exists in Firebase");
+                            } else {
+                                console.warn("⚠️ Warning: Product not found after save");
+                            }
+                        });
+                    }, 1000);
                 })
                 .catch(e => {
-                    console.error("Firebase error:", e);
-                    alert("❌ Erreur lors de l'ajout: " + e.message);
+                    console.error("❌ Firebase error:", e);
+                    let errorMsg = "❌ Erreur lors de l'ajout: " + e.message;
+                    
+                    // Check if it's a config issue
+                    if (e.code === 'auth/configuration-not-found' || e.message.includes('API key')) {
+                        errorMsg += "\n\n⚠️ Vérifiez que votre configuration Firebase est correcte dans admin.html";
+                    }
+                    
+                    alert(errorMsg);
                     btn.textContent = originalText;
                     btn.disabled = false;
                 });
