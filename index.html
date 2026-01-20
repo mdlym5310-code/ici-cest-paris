@@ -220,8 +220,10 @@
                         <div class="image-loader" id="image-loader">
                             <div class="loader-spinner"></div>
                         </div>
-                        <img id="modal-image" src="" alt="" loading="lazy" onload="hideImageLoader()"
-                            onerror="handleImageError(this)">
+                        <!-- Native Scroll Snap Track -->
+                        <div id="gallery-track" class="gallery-track">
+                            <!-- Images injected via JS -->
+                        </div>
                     </div>
                     <div id="stock-badge" class="stock-badge">EN STOCK</div>
                     <div class="zoom-controls">

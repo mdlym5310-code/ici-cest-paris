@@ -662,71 +662,11 @@ function openProductModal(id) {
 }
 
 // --- SWIPE GALLERY LOGIC ---
-function initSwipeGallery(product) {
-    const container = document.querySelector('.modal-image-container');
-    if (!container || !product.images || product.images.length <= 1) return;
-
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const minSwipeDistance = 50;
-
-    container.addEventListener('touchstart', (e) => {
-        // Only if not zoomed in
-        if (typeof imageZoom !== 'undefined' && imageZoom.scale > 1) return;
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    container.addEventListener('touchend', (e) => {
-        if (typeof imageZoom !== 'undefined' && imageZoom.scale > 1) return;
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    }, { passive: true });
-
-    function handleSwipe() {
-        const distance = touchEndX - touchStartX;
-
-        if (Math.abs(distance) < minSwipeDistance) return;
-
-        const currentSrc = document.getElementById('modal-image').src;
-        // Find current index based on src match
-        // Note: src might be fully qualified, so we match loosely or exactly if possible.
-        // Better approach: Maintain currentIndex state, but for stateless simplicity we find it.
-        let currentIndex = product.images.findIndex(img => currentSrc.includes(img) || img.includes(currentSrc));
-
-        // Fallback or exact match check
-        if (currentIndex === -1) currentIndex = 0;
-
-        if (distance > 0) {
-            // Swiped Right -> Previous Image
-            const prevIndex = (currentIndex - 1 + product.images.length) % product.images.length;
-            changeModalImage(product.images[prevIndex]);
-        } else {
-            // Swiped Left -> Next Image
-            const nextIndex = (currentIndex + 1) % product.images.length;
-            changeModalImage(product.images[nextIndex]);
-        }
-    }
-}
-
-function changeModalImage(src, thumb) {
-    const modalImage = document.getElementById('modal-image');
-
-    // Animate change
-    modalImage.style.opacity = '0';
-    setTimeout(() => {
-        modalImage.src = src;
-        modalImage.onload = () => {
-            modalImage.style.opacity = '1';
-        }
-    }, 200);
-
-    // Update active thumb
-    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-    if (thumb) thumb.classList.add('active');
-
-    // Reset Zoom
-    if (typeof resetZoom === 'function') resetZoom();
-}
+// Old swipe logic removed in favor of CSS Scroll Snap
+/* 
+function initSwipeGallery(product) { ... }
+function changeModalImage(src, thumb) { ... }
+*/
 
 function initImageZoom() {
     const modalImage = document.getElementById('modal-image');
