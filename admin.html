@@ -113,8 +113,9 @@
         </div>
         <div class="form-group marathon-row" style="display:flex; gap:15px;">
             <div style="flex:1">
-                <label>Prix (DA)</label>
-                <input type="number" id="p-price" placeholder="38500">
+                <label>Prix (DA) *</label>
+                <input type="number" id="p-price" placeholder="38500" min="0" step="1" required>
+                <small id="price-preview" style="display:none; color:#666; font-size:12px; margin-top:5px;"></small>
             </div>
             <div style="flex:1">
                 <label>Statut</label>
@@ -233,15 +234,60 @@
             } else { alert("Mot de passe incorrect !"); }
         }
 
+        // Format price with commas
+        function formatPrice(price) {
+            const numPrice = parseInt(price);
+            if (isNaN(numPrice)) return price;
+            return numPrice.toLocaleString('fr-FR');
+        }
+        
+        // Update price preview
+        function updatePricePreview() {
+            const priceInput = document.getElementById('p-price');
+            const preview = document.getElementById('price-preview');
+            const price = priceInput.value.trim();
+            
+            if (price && !isNaN(price) && parseInt(price) > 0) {
+                const formatted = formatPrice(price);
+                preview.textContent = `Aperçu: ${formatted} DA`;
+                preview.style.display = 'block';
+                preview.style.color = '#28a745';
+            } else if (price) {
+                preview.textContent = '⚠️ Veuillez entrer un prix valide';
+                preview.style.display = 'block';
+                preview.style.color = '#dc3545';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+        
+        // Add event listener for price input
+        document.addEventListener('DOMContentLoaded', () => {
+            const priceInput = document.getElementById('p-price');
+            if (priceInput) {
+                priceInput.addEventListener('input', updatePricePreview);
+                priceInput.addEventListener('blur', updatePricePreview);
+            }
+        });
+
         function addProduct() {
             // Validate inputs
             const name = document.getElementById('p-name').value.trim();
-            const price = document.getElementById('p-price').value.trim();
+            const priceInput = document.getElementById('p-price');
+            const price = priceInput.value.trim();
             const image = document.getElementById('p-img').value.trim();
             const sizes = document.getElementById('p-sizes').value.trim();
             
             if (!name || !price || !image) {
                 alert("⚠️ Veuillez remplir tous les champs obligatoires (Nom, Prix, Image)");
+                return;
+            }
+            
+            // Validate price is a valid number
+            const numPrice = parseInt(price);
+            if (isNaN(numPrice) || numPrice <= 0) {
+                alert("⚠️ Veuillez entrer un prix valide (nombre supérieur à 0)");
+                priceInput.focus();
                 return;
             }
             
@@ -251,12 +297,13 @@
             }
             
             const id = Date.now();
+            const formattedPrice = formatPrice(price);
             const product = {
                 id: id,
                 name: name,
                 category: document.getElementById('p-cat').value,
-                price: parseInt(price),
-                displayPrice: price + " DA",
+                price: numPrice,
+                displayPrice: formattedPrice + " DA",
                 image: image,
                 sizes: sizes ? sizes.split(',').map(s => s.trim()).filter(s => s) : ["Standard"],
                 stock: document.getElementById('p-stock').value,
