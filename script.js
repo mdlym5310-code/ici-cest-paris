@@ -358,7 +358,8 @@ let imageZoom = {
     startX: 0,
     startY: 0,
     minScale: 1,
-    maxScale: 5
+    maxScale: 5,
+    wheelHandler: null
 };
 
 function openProductModal(id) {
@@ -408,6 +409,7 @@ function openProductModal(id) {
 function initImageZoom() {
     const modalImage = document.getElementById('modal-image');
     const imageContainer = document.querySelector('.modal-image-container');
+    const imageWrapper = document.querySelector('.image-zoom-wrapper');
     if (!modalImage || !imageContainer) return;
     
     // Reset zoom state
@@ -416,16 +418,31 @@ function initImageZoom() {
     imageZoom.panY = 0;
     applyImageTransform();
     
-    // Remove existing event listeners by cloning
-    const newImage = modalImage.cloneNode(true);
-    modalImage.parentNode.replaceChild(newImage, modalImage);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
     
-    // Mouse wheel zoom
-    imageContainer.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? -0.1 : 0.1;
-        zoomImage(delta, e.clientX, e.clientY);
-    }, { passive: false });
+    // Create wheel handler function
+    imageZoom.wheelHandler = (e) => {
+        // Only handle if mouse is over the image area
+        const rect = imageContainer.getBoundingClientRect();
+        const isOverImage = e.clientX >= rect.left && e.clientX <= rect.right &&
+                           e.clientY >= rect.top && e.clientY <= rect.bottom;
+        
+        if (isOverImage) {
+            e.preventDefault();
+            e.stopPropagation();
+            const delta = e.deltaY > 0 ? -0.15 : 0.15;
+            zoomImage(delta, e.clientX, e.clientY);
+            return false;
+        }
+    };
+    
+    // Attach wheel event to container, wrapper, and image with capture phase
+    imageContainer.addEventListener('wheel', imageZoom.wheelHandler, { passive: false, capture: true });
+    if (imageWrapper) {
+        imageWrapper.addEventListener('wheel', imageZoom.wheelHandler, { passive: false, capture: true });
+    }
+    modalImage.addEventListener('wheel', imageZoom.wheelHandler, { passive: false, capture: true });
     
     // Mouse down - start panning
     imageContainer.addEventListener('mousedown', (e) => {
@@ -511,12 +528,16 @@ function zoomImage(delta, centerX, centerY) {
     imageZoom.scale = Math.max(imageZoom.minScale, Math.min(imageZoom.maxScale, imageZoom.scale + delta));
     
     if (centerX && centerY) {
-        const rect = document.querySelector('.modal-image-container').getBoundingClientRect();
-        const relativeX = centerX - rect.left - rect.width / 2;
-        const relativeY = centerY - rect.top - rect.height / 2;
-        
-        imageZoom.panX += relativeX * (oldScale - imageZoom.scale);
-        imageZoom.panY += relativeY * (oldScale - imageZoom.scale);
+        const imageContainer = document.querySelector('.modal-image-container');
+        if (imageContainer) {
+            const rect = imageContainer.getBoundingClientRect();
+            const relativeX = centerX - rect.left - rect.width / 2;
+            const relativeY = centerY - rect.top - rect.height / 2;
+            
+            // Calculate zoom point relative to image center
+            imageZoom.panX += -relativeX * (imageZoom.scale - oldScale);
+            imageZoom.panY += -relativeY * (imageZoom.scale - oldScale);
+        }
     }
     
     applyImageTransform();
@@ -547,6 +568,24 @@ function resetZoom() {
     imageZoom.panX = 0;
     imageZoom.panY = 0;
     applyImageTransform();
+    
+    // Remove wheel event listeners
+    const modalImage = document.getElementById('modal-image');
+    const imageContainer = document.querySelector('.modal-image-container');
+    const imageWrapper = document.querySelector('.image-zoom-wrapper');
+    
+    if (imageZoom.wheelHandler) {
+        if (imageContainer) {
+            imageContainer.removeEventListener('wheel', imageZoom.wheelHandler, { capture: true });
+        }
+        if (imageWrapper) {
+            imageWrapper.removeEventListener('wheel', imageZoom.wheelHandler, { capture: true });
+        }
+        if (modalImage) {
+            modalImage.removeEventListener('wheel', imageZoom.wheelHandler, { capture: true });
+        }
+        imageZoom.wheelHandler = null;
+    }
 }
 
 function zoomIn() {
@@ -595,8 +634,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modal) {
                 modal.classList.remove('active');
                 resetZoom(); // Reset zoom when closing modal
+                document.body.style.overflow = ''; // Restore body scroll
             }
         };
+    }
+    
+    // Also restore scroll when clicking outside modal
+    const modal = document.getElementById('product-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                resetZoom();
+                document.body.style.overflow = '';
+            }
+        });
     }
     
     // Zoom control buttons
