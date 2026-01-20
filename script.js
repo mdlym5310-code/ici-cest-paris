@@ -674,7 +674,7 @@ function openProductModal(id) {
     }
 
     // Hide loader
-    const loader = document.getElementById('image-loader');
+    // Hide loader
     if (loader) {
         loader.classList.remove('hidden');
         setTimeout(() => loader.classList.add('hidden'), 500);
