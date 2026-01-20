@@ -1,4 +1,24 @@
 // --- CONFIG & STATE ---
+/**
+ * Firebase Configuration
+ * 
+ * To set up Firebase:
+ * 1. Go to https://console.firebase.google.com/
+ * 2. Create a new project or select existing one
+ * 3. Enable Realtime Database
+ * 4. Copy your config from Project Settings > General > Your apps
+ * 5. Replace the placeholder values below with your actual Firebase config
+ * 
+ * Security Rules Example (Firebase Console > Realtime Database > Rules):
+ * {
+ *   "rules": {
+ *     "products": {
+ *       ".read": true,
+ *       ".write": false
+ *     }
+ *   }
+ * }
+ */
 const firebaseConfig = {
     apiKey: "AIzaSyAs-EXAMPLE-PLACEHOLDER",
     authDomain: "ici-cest-paris-store.firebaseapp.com",
@@ -9,9 +29,18 @@ const firebaseConfig = {
     appId: "1:123456789:web:abcdef"
 };
 
+// Initialize Firebase if available
 if (typeof firebase !== 'undefined') {
-    firebase.initializeApp(firebaseConfig);
-    var database = firebase.database();
+    try {
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+        console.log("✅ Firebase initialized successfully");
+    } catch (error) {
+        console.warn("⚠️ Firebase initialization error:", error);
+        console.log("📦 Using fallback data mode");
+    }
+} else {
+    console.log("📦 Firebase SDK not loaded - using fallback data");
 }
 
 let products = [];
@@ -35,28 +64,234 @@ window.onload = () => {
 async function initApp() {
     console.log("🚀 Initialisation du moteur ici.c'est.PARIS...");
 
+    // Initialize dynamic features
+    initDynamicFeatures();
+
     // 1. Initial Render (Fallbacks First)
     renderProducts(fallbackProducts);
 
     // 2. Sync with Firebase
     connectToFirebase();
 
-    // 3. Fade out Loading Screen
+    // 3. Setup event listeners
+    setupEventListeners();
+
+    // 4. Initialize slider
+    initSlider();
+
+    // 5. Fade out Loading Screen
     setTimeout(() => {
         document.getElementById('loading-screen').classList.add('fade-out');
         triggerReveal();
+        addFloatingElements();
     }, 2000);
 }
 
-function connectToFirebase() {
-    if (typeof database === 'undefined' || !database) return;
-    database.ref('products').on('value', (snap) => {
-        const val = snap.val();
-        if (val) {
-            products = Object.values(val);
-            renderProducts(products);
+// Initialize dynamic features
+function initDynamicFeatures() {
+    // Add parallax effect to hero
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const hero = document.querySelector('.hero');
+        if (hero) {
+            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
         }
     });
+
+    // Add mouse move effect to product cards
+    document.addEventListener('mousemove', (e) => {
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+            }
+        });
+    });
+
+    // Reset card transforms on mouse leave
+    document.addEventListener('mouseleave', () => {
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            card.style.transform = '';
+        });
+    });
+}
+
+// Add floating decorative elements
+function addFloatingElements() {
+    const body = document.body;
+    for (let i = 0; i < 5; i++) {
+        const floatEl = document.createElement('div');
+        floatEl.style.cssText = `
+            position: fixed;
+            width: ${Math.random() * 100 + 50}px;
+            height: ${Math.random() * 100 + 50}px;
+            background: ${i % 2 === 0 ? 'rgba(227, 6, 19, 0.1)' : 'rgba(0, 51, 102, 0.1)'};
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 100}%;
+            animation: float ${Math.random() * 10 + 10}s ease-in-out infinite;
+            filter: blur(40px);
+        `;
+        body.appendChild(floatEl);
+    }
+}
+
+// Initialize slider functionality
+function initSlider() {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.slider-dots');
+    let currentSlide = 0;
+
+    if (slides.length === 0) return;
+
+    // Create dots
+    const dotsContainer = document.getElementById('slider-dots');
+    if (dotsContainer) {
+        dotsContainer.innerHTML = '';
+        slides.forEach((_, index) => {
+            const dot = document.createElement('span');
+            dot.className = `dot ${index === 0 ? 'active' : ''}`;
+            dot.style.cssText = `
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: ${index === 0 ? 'white' : 'rgba(255,255,255,0.5)'};
+                display: inline-block;
+                margin: 0 5px;
+                cursor: pointer;
+                transition: all 0.3s;
+            `;
+            dot.addEventListener('click', () => goToSlide(index));
+            dotsContainer.appendChild(dot);
+        });
+    }
+
+    function goToSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === index);
+        });
+        const dotElements = document.querySelectorAll('.dot');
+        dotElements.forEach((dot, i) => {
+            dot.style.background = i === index ? 'white' : 'rgba(255,255,255,0.5)';
+        });
+        currentSlide = index;
+    }
+
+    // Auto-rotate slides
+    setInterval(() => {
+        currentSlide = (currentSlide + 1) % slides.length;
+        goToSlide(currentSlide);
+    }, 5000);
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Category filtering
+    document.querySelectorAll('[data-category]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const category = link.getAttribute('data-category');
+            filterProducts(category);
+            
+            // Update active state
+            document.querySelectorAll('[data-category]').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+        });
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchProducts(e.target.value);
+            }, 300);
+        });
+    }
+
+    // Close modal on outside click
+    const modal = document.getElementById('product-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (modal) modal.classList.remove('active');
+            const cartDrawer = document.getElementById('cart-drawer');
+            if (cartDrawer) cartDrawer.classList.remove('active');
+        }
+    });
+}
+
+// Filter products by category
+function filterProducts(category) {
+    const allProducts = products.length > 0 ? products : fallbackProducts;
+    const filtered = category === 'all' 
+        ? allProducts 
+        : allProducts.filter(p => p.category === category);
+    renderProducts(filtered);
+    showNotification(`Affichage: ${category === 'all' ? 'Tous les produits' : category}`);
+}
+
+// Search products
+function searchProducts(query) {
+    if (!query.trim()) {
+        renderProducts(products.length > 0 ? products : fallbackProducts);
+        return;
+    }
+    
+    const allProducts = products.length > 0 ? products : fallbackProducts;
+    const filtered = allProducts.filter(p => 
+        p.name.toLowerCase().includes(query.toLowerCase()) ||
+        p.category.toLowerCase().includes(query.toLowerCase())
+    );
+    renderProducts(filtered);
+}
+
+function connectToFirebase() {
+    if (typeof database === 'undefined' || !database) {
+        console.log("📦 Firebase not available - using fallback data");
+        return;
+    }
+    
+    try {
+        database.ref('products').on('value', (snap) => {
+            const val = snap.val();
+            if (val) {
+                products = Object.values(val);
+                renderProducts(products);
+                console.log(`✅ Loaded ${products.length} products from Firebase`);
+                showNotification(`✅ ${products.length} produits chargés depuis Firebase`, 'success');
+            } else {
+                console.log("📦 No Firebase data - using fallback");
+            }
+        }, (error) => {
+            console.error("❌ Firebase error:", error);
+            showNotification("⚠️ Erreur de connexion Firebase - Mode hors ligne activé", 'warning');
+        });
+    } catch (error) {
+        console.error("❌ Firebase connection error:", error);
+    }
 }
 
 // --- CORE RENDERING ---
@@ -140,20 +375,96 @@ function triggerReveal() {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.close-modal').onclick = () => document.getElementById('product-modal').classList.remove('active');
-    document.getElementById('cart-btn').onclick = () => showNotification("Le panier est en cours d'optimisation... Utilisez Commande Express !");
+    const closeModal = document.querySelector('.close-modal');
+    if (closeModal) {
+        closeModal.onclick = () => {
+            const modal = document.getElementById('product-modal');
+            if (modal) modal.classList.remove('active');
+        };
+    }
+    
+    const closeCart = document.querySelector('.close-cart');
+    if (closeCart) {
+        closeCart.onclick = () => {
+            const cartDrawer = document.getElementById('cart-drawer');
+            if (cartDrawer) cartDrawer.classList.remove('active');
+        };
+    }
+    
+    const cartBtn = document.getElementById('cart-btn');
+    if (cartBtn) {
+        cartBtn.onclick = () => {
+            const cartDrawer = document.getElementById('cart-drawer');
+            if (cartDrawer) {
+                cartDrawer.classList.add('active');
+            } else {
+                showNotification("Le panier est en cours d'optimisation... Utilisez Commande Express !", 'info');
+            }
+        };
+    }
+    
+    // Add smooth scroll to CTA buttons
+    document.querySelectorAll('.cta-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const productsSection = document.querySelector('.featured-products');
+            if (productsSection) {
+                productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
 });
 
-function showNotification(msg) {
+function showNotification(msg, type = 'info') {
     const container = document.getElementById('notification-container');
+    if (!container) return;
+    
     const n = document.createElement('div');
     n.className = 'notification';
     n.textContent = msg;
-    n.style.background = 'var(--paris-blue)';
+    
+    // Set color based on type
+    const colors = {
+        'success': 'linear-gradient(135deg, #28a745, #20c997)',
+        'warning': 'linear-gradient(135deg, #ffc107, #ff9800)',
+        'error': 'linear-gradient(135deg, #dc3545, #c82333)',
+        'info': 'linear-gradient(135deg, var(--paris-blue), var(--paris-red))'
+    };
+    
+    n.style.background = colors[type] || colors.info;
     n.style.color = 'white';
-    n.style.padding = '20px';
-    n.style.borderRadius = '10px';
+    n.style.padding = '20px 30px';
+    n.style.borderRadius = '15px';
     n.style.marginTop = '10px';
+    n.style.fontWeight = '700';
+    n.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+    n.style.backdropFilter = 'blur(10px)';
+    
     container.appendChild(n);
-    setTimeout(() => n.remove(), 4000);
+    
+    // Animate in
+    setTimeout(() => n.style.opacity = '1', 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+        n.style.opacity = '0';
+        n.style.transform = 'translateX(400px)';
+        setTimeout(() => n.remove(), 400);
+    }, 4000);
+}
+
+// Add number counter animation
+function animateCounter(element, target, duration = 2000) {
+    const start = 0;
+    const increment = target / (duration / 16);
+    let current = start;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            element.textContent = target;
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.floor(current);
+        }
+    }, 16);
 }
