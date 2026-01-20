@@ -47,6 +47,10 @@ let products = [];
 let cart = [];
 let selectedSize = null;
 
+// WhatsApp Configuration
+const WHATSAPP_NUMBER = "+213774743573"; // Your WhatsApp number
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}`;
+
 // The "Truly Real" Fallback Data
 const fallbackProducts = [
     { id: 1, name: "Ensemble Nike Tech 💚🤍", category: "Homme", price: 38500, displayPrice: "38,500 DA", image: "https://instagram.ftlm1-1.fna.fbcdn.net/v/t51.82787-15/612217866_18080234006257992_7913269358075475897_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=105&ig_cache_key=MzgwODY4ODIxNjgwNzIyMjM3NA%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjE0NDB4MTgwNS5zZHIuQzMifQ%3D%3D&_nc_ohc=Qfr-nClZUsMQ7kNvwH1p8VL&_nc_oc=AdmoCL2pP3zc3qJKBVuJzNdcthHZ4QHPhSABCtiIGx2orugqrVuswWRPTfW5vg0kLew&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=instagram.ftlm1-1.fna&_nc_gid=5VHWhoKhmFbc0t2fwkzJ6g&oh=00_Afq0Fig-9j9d5Yf9qdkqBD1RDiAIyPRkshdVy-3foLCyXw&oe=69748465", sizes: ["M", "L", "XL", "XXL"], stock: "in" },
@@ -682,10 +686,89 @@ function selectSize(el, size) {
     selectedSize = size;
 }
 
+// Cart Functions
+function updateCartCount() {
+    const cartCount = document.getElementById('cart-count');
+    if (cartCount) {
+        const count = cart.length;
+        cartCount.textContent = `Panier (${count})`;
+    }
+}
+
+function addToCart(product, size) {
+    const cartItem = {
+        id: Date.now(),
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        displayPrice: product.displayPrice || product.price + ' DA',
+        image: product.image,
+        size: size || 'Standard',
+        quantity: 1
+    };
+    
+    cart.push(cartItem);
+    updateCartCount();
+    showNotification(`✅ ${product.name} ajouté au panier !`, 'success');
+    updateCartDrawer();
+}
+
+function removeFromCart(itemId) {
+    cart = cart.filter(item => item.id !== itemId);
+    updateCartCount();
+    updateCartDrawer();
+    showNotification('Produit retiré du panier', 'info');
+}
+
+function updateCartDrawer() {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total-amount');
+    
+    if (!cartItems) return;
+    
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p style="text-align:center; padding:40px; color:#999;">Votre panier est vide</p>';
+        if (cartTotal) cartTotal.textContent = '0 DA';
+        return;
+    }
+    
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (cartTotal) cartTotal.textContent = total.toLocaleString() + ' DA';
+    
+    cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+            <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/80x80'">
+            <div style="flex:1;">
+                <h4>${item.name}</h4>
+                <p>Taille: ${item.size}</p>
+                <p><strong>${item.displayPrice}</strong></p>
+            </div>
+            <button onclick="removeFromCart(${item.id})" style="background:none; border:none; color:#dc3545; cursor:pointer; font-size:20px; padding:5px 10px;">×</button>
+        </div>
+    `).join('');
+}
+
 function sendToWhatsApp(p) {
     const sizeInfo = selectedSize ? ` (Taille: ${selectedSize})` : "";
-    const msg = `Salam ici.c'est.PARIS 👋\nJe souhaite commander :\n📦 *${p.name}*${sizeInfo}\n💰 Prix : ${p.displayPrice || p.price + ' DA'}\n\nVeuillez confirmer la disponibilité svp.`;
-    window.open(`https://wa.me/213774743573?text=${encodeURIComponent(msg)}`, '_blank');
+    const msg = `Salam ici.c'est.PARIS 👋\n\nJe souhaite commander :\n📦 *${p.name}*${sizeInfo}\n💰 Prix : ${p.displayPrice || p.price + ' DA'}\n\nVeuillez confirmer la disponibilité svp.`;
+    window.open(`${WHATSAPP_URL}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// Send cart to WhatsApp
+function sendCartToWhatsApp() {
+    if (cart.length === 0) {
+        showNotification('Votre panier est vide', 'warning');
+        return;
+    }
+    
+    let message = `Salam ici.c'est.PARIS 👋\n\nJe souhaite commander :\n\n`;
+    cart.forEach((item, i) => {
+        message += `${i + 1}. *${item.name}*\n   Taille: ${item.size}\n   Prix: ${item.displayPrice}\n\n`;
+    });
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    message += `💰 Total: ${total.toLocaleString()} DA\n\nVeuillez confirmer la disponibilité svp.`;
+    
+    window.open(`${WHATSAPP_URL}?text=${encodeURIComponent(message)}`, '_blank');
 }
 
 // --- UTILS ---
@@ -745,9 +828,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const cartDrawer = document.getElementById('cart-drawer');
             if (cartDrawer) {
                 cartDrawer.classList.add('active');
+                updateCartDrawer();
             } else {
                 showNotification("Le panier est en cours d'optimisation... Utilisez Commande Express !", 'info');
             }
+        };
+    }
+    
+    // WhatsApp checkout button
+    const whatsappCheckout = document.getElementById('whatsapp-checkout');
+    if (whatsappCheckout) {
+        whatsappCheckout.onclick = () => {
+            sendCartToWhatsApp();
         };
     }
     
