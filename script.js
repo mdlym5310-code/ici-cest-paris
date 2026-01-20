@@ -710,6 +710,7 @@ function initImageZoom() {
     // Find the ACTIVE slide to apply zoom to
     const track = document.getElementById('gallery-track');
     let targetImage = document.getElementById('modal-image'); // Fallback
+    const imageContainer = document.querySelector('.modal-image-container'); // FIXED: Defined here
 
     if (track) {
         // Find visible image based on scroll position
