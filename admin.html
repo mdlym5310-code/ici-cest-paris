@@ -90,6 +90,9 @@
 
     <div class="admin-wrap" id="admin-interface" style="display:none;">
         <h1 style="color:var(--paris-blue); margin-bottom: 30px;">Gestion ici.c'est.PARIS</h1>
+        <div id="firebase-status" style="margin-bottom: 20px; padding: 15px; border-radius: 10px; font-weight: 700;">
+            <span id="status-icon">⏳</span> <span id="status-text">Vérification de la connexion Firebase...</span>
+        </div>
 
         <div class="form-group">
             <label>Nom du Produit</label>
@@ -305,8 +308,40 @@
                 });
         }
         
-        // Add real-time product preview
+        // Update Firebase status indicator
+        function updateFirebaseStatus(connected, message) {
+            const statusDiv = document.getElementById('firebase-status');
+            const statusIcon = document.getElementById('status-icon');
+            const statusText = document.getElementById('status-text');
+            
+            if (!statusDiv) return;
+            
+            if (connected) {
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.border = '2px solid #28a745';
+                statusDiv.style.color = '#155724';
+                statusIcon.textContent = '✅';
+                statusText.textContent = message || 'Connecté à Firebase';
+            } else {
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.border = '2px solid #dc3545';
+                statusDiv.style.color = '#721c24';
+                statusIcon.textContent = '❌';
+                statusText.textContent = message || 'Non connecté à Firebase';
+            }
+        }
+        
+        // Check Firebase connection status
         if (database) {
+            database.ref('.info/connected').on('value', (snap) => {
+                if (snap.val() === true) {
+                    updateFirebaseStatus(true, '✅ Connecté à Firebase - Les produits seront sauvegardés en ligne');
+                } else {
+                    updateFirebaseStatus(false, '❌ Non connecté - Vérifiez votre configuration Firebase');
+                }
+            });
+            
+            // Add real-time product preview
             database.ref('products').on('value', (snapshot) => {
                 const products = snapshot.val();
                 const count = products ? Object.keys(products).length : 0;
@@ -315,6 +350,8 @@
                     previewText.textContent = `Les modifications apparaîtront instantanément sur le site. ${count} produit(s) actuellement en ligne.`;
                 }
             });
+        } else {
+            updateFirebaseStatus(false, '❌ Firebase non configuré - Consultez FIREBASE_SETUP.md');
         }
     </script>
 </body>
