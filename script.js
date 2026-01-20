@@ -40,10 +40,6 @@ function syncProducts() {
     });
 }
 
-const fallbackProducts = [
-    { id: 1, name: "Nike Tech Grey", category: "Homme", price: 38500, displayPrice: "38,500 DA", image: "images/lacoste_grey.jpg" },
-    { id: 2, name: "Jordan Sweat Black", category: "Homme", price: 12000, displayPrice: "12,000 DA", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=1000" }
-];
 
 // --- RENDERING PRODUCTS ---
 function renderProducts(pList) {
