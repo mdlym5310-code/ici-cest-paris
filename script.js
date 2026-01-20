@@ -271,10 +271,33 @@ function searchProducts(query) {
 function connectToFirebase() {
     if (typeof database === 'undefined' || !database) {
         console.log("📦 Firebase not available - using fallback data");
+        console.log("💡 Tip: Configure Firebase in script.js to enable online product sync");
+        return;
+    }
+    
+    // Check if using placeholder config
+    const isPlaceholderConfig = firebaseConfig.apiKey.includes('EXAMPLE') || 
+                                firebaseConfig.apiKey === 'AIzaSyAs-EXAMPLE-PLACEHOLDER';
+    
+    if (isPlaceholderConfig) {
+        console.warn("⚠️ Firebase config uses placeholder values!");
+        console.log("📝 Update firebaseConfig in script.js with your actual Firebase credentials");
+        console.log("📦 Using fallback products until Firebase is configured");
         return;
     }
     
     try {
+        // Test connection first
+        database.ref('.info/connected').once('value', (snap) => {
+            if (snap.val() === true) {
+                console.log("✅ Connected to Firebase - listening for products...");
+            } else {
+                console.warn("⚠️ Not connected to Firebase");
+                showNotification("⚠️ Connexion Firebase échouée - Mode hors ligne", 'warning');
+            }
+        });
+        
+        // Listen for products
         database.ref('products').on('value', (snap) => {
             const val = snap.val();
             if (val) {
@@ -284,13 +307,21 @@ function connectToFirebase() {
                 showNotification(`✅ ${products.length} produits chargés depuis Firebase`, 'success');
             } else {
                 console.log("📦 No Firebase data - using fallback");
+                console.log("💡 Add products via admin.html to populate Firebase");
             }
         }, (error) => {
             console.error("❌ Firebase error:", error);
-            showNotification("⚠️ Erreur de connexion Firebase - Mode hors ligne activé", 'warning');
+            let errorMsg = "⚠️ Erreur de connexion Firebase - Mode hors ligne activé";
+            
+            if (error.code === 'PERMISSION_DENIED') {
+                errorMsg += "\n\nVérifiez les règles de sécurité Firebase (Realtime Database > Rules)";
+            }
+            
+            showNotification(errorMsg, 'warning');
         });
     } catch (error) {
         console.error("❌ Firebase connection error:", error);
+        showNotification("⚠️ Erreur de connexion Firebase", 'error');
     }
 }
 
