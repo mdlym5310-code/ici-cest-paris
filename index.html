@@ -21,6 +21,22 @@
 </head>
 
 <body>
+    <!-- Premium Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <span class="logo-blue">ici.c'est.</span><span class="logo-red">PARIS</span>
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+
+    <!-- Top Info Marquee -->
+    <div class="promo-marquee">
+        <div class="marquee-content">
+            LIVRAISON EXPRESS 58 WILAYAS 🚚 | PRODUITS 100% ORIGINAUX ✅ | PAIEMENT À LA LIVRAISON 💵 | SERVICE CLIENT
+            24/7 ☎️ | LIVRAISON EXPRESS 58 WILAYAS 🚚 | PRODUITS 100% ORIGINAUX ✅
+        </div>
+    </div>
+
     <header class="navbar">
         <div class="nav-container centered-nav">
             <div class="logo">
@@ -126,13 +142,23 @@
             <div class="modal-body">
                 <div class="modal-image-container">
                     <img id="modal-image" src="" alt="">
+                    <div id="stock-badge" class="stock-badge">EN STOCK</div>
                 </div>
                 <div class="modal-info">
                     <h2 id="modal-name"></h2>
                     <p id="modal-category" class="category-pill"></p>
                     <div id="modal-price" class="price-large"></div>
-                    <p class="modal-description">Authentic quality, premium finish. DLMSTREET exclusivity.</p>
-                    <button class="add-to-cart-btn">COMMANDEZ MAINTENANT</button>
+
+                    <div class="size-selection">
+                        <p>Choisir la Taille :</p>
+                        <div id="size-options" class="size-pills">
+                            <!-- Sizes like S, M, L or 40, 41 will appear here -->
+                        </div>
+                    </div>
+
+                    <p class="modal-description">Qualité authentique, finition premium. Sélection exclusive
+                        ici.c'est.PARIS pour le marché algérien.</p>
+                    <button class="add-to-cart-btn">COMMANDEZ MAINTENANT (WHATSAPP)</button>
                 </div>
             </div>
         </div>
