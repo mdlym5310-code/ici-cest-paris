@@ -138,16 +138,22 @@
         </div>
         <div class="form-group">
             <label>Image du produit (URL ou Upload)</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="p-img" placeholder="https://..." onchange="updatePreview()">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="p-img" placeholder="https://... (Image Principale)" onchange="updatePreview()">
                 <label for="p-file" class="upload-btn"
                     style="cursor: pointer; background: var(--paris-blue); color: white; padding: 10px 15px; border-radius: 8px; font-size: 14px;">
-                    📸 Upload
+                    📸 Upload (Max 4)
                 </label>
-                <input type="file" id="p-file" accept="image/*" style="display: none;"
+                <input type="file" id="p-file" accept="image/*" multiple style="display: none;"
                     onchange="handleImageUpload(this)">
             </div>
-            <small style="color: #666; font-size: 11px;">Max 800px - Compression auto</small>
+            <small style="color: #666; font-size: 11px;">Sélectionnez jusqu'à 4 images. La première sera l'image
+                principale.</small>
+
+            <!-- Gallery Preview -->
+            <div id="gallery-preview" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                <!-- Thumbnails will appear here -->
+            </div>
         </div>
 
         <!-- Hidden canvas for compression -->
@@ -379,13 +385,25 @@
             const id = currentEditId ? currentEditId : Date.now();
             const formattedPrice = formatPrice(price);
 
+            // Sync main image input with array if needed
+            if (document.getElementById('p-img').value !== (currentImages[0] || '')) {
+                // If user manually typed a URL, add it to start of array
+                const manualUrl = document.getElementById('p-img').value;
+                if (manualUrl && !currentImages.includes(manualUrl)) {
+                    currentImages.unshift(manualUrl);
+                }
+            }
+            // Fallback for single image legacy
+            if (currentImages.length === 0 && image) currentImages.push(image);
+
             const product = {
                 id: id,
                 name: name,
                 category: document.getElementById('p-cat').value,
                 price: numPrice,
                 displayPrice: formattedPrice + " DA",
-                image: image,
+                image: image, // Keep main URL for compatibility
+                images: currentImages, // NEW: Full gallery
                 sizes: sizes ? sizes.split(',').map(s => s.trim()).filter(s => s) : ["Standard"],
                 stock: document.getElementById('p-stock').value,
                 updatedAt: new Date().toISOString()
@@ -395,7 +413,7 @@
             if (!currentEditId) {
                 product.createdAt = new Date().toISOString();
             } else {
-                // Fetch original createdAt if possible, or just ignore
+                // Fetch original createdAt if possible, or just ignore (it's fine)
             }
 
             // Show loading state
@@ -420,7 +438,9 @@
                     document.getElementById('p-sizes').value = '';
                     document.getElementById('p-price').value = '';
                     document.getElementById('price-preview').style.display = 'none';
-                    document.getElementById('img-preview').style.display = 'none';
+                    // document.getElementById('img-preview').style.display = 'none'; 
+                    currentImages = []; // Reset Array
+                    updateGalleryPreview(); // Reset UI
 
                     // Reset Button
                     currentEditId = null;
@@ -537,6 +557,10 @@
                 document.getElementById('p-stock').value = p.stock;
                 document.getElementById('p-img').value = p.image;
 
+                // Load gallery images
+                currentImages = p.images || [p.image];
+                updateGalleryPreview();
+
                 updatePricePreview();
                 updatePreview();
 
@@ -554,76 +578,106 @@
 
         // Diagnostic Function
         // --- CAMERA ROLL / FILE UPLOAD LOGIC ---
-        function handleImageUpload(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
+        // --- MULTI-IMAGE UPLOAD LOGIC ---
+        let currentImages = []; // Array to store multiple Base64 strings
 
-                // Show loading on the upload button
+        function handleImageUpload(input) {
+            if (input.files && input.files.length > 0) {
+                const files = Array.from(input.files).slice(0, 4); // Limit to 4
+
+                // Reset if new selection
+                // currentImages = []; // Optional: Clear previous or append? Let's clear for simplicity.
+                // Actually, existing behavior usually expects clear on new selection.
+
                 const label = document.querySelector('.upload-btn');
                 const originalText = label.textContent;
                 label.textContent = "⏳ Traitement...";
-                label.style.opacity = "0.7";
 
-                reader.onload = function (e) {
-                    const img = new Image();
-                    img.src = e.target.result;
+                let processedCount = 0;
+                const tempImages = [];
 
-                    img.onload = function () {
-                        // Create canvas for compression
-                        const canvas = document.getElementById('compress-canvas');
-                        const ctx = canvas.getContext('2d');
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = function () {
+                            const canvas = document.getElementById('compress-canvas');
+                            const ctx = canvas.getContext('2d');
 
-                        // Calculate new dimensions (max 800px)
-                        const MAX_WIDTH = 800;
-                        const MAX_HEIGHT = 800;
-                        let width = img.width;
-                        let height = img.height;
+                            // Resize logic
+                            const MAX_WIDTH = 800;
+                            const MAX_HEIGHT = 800;
+                            let width = img.width;
+                            let height = img.height;
 
-                        if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
+                            if (width > height) {
+                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                            } else {
+                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                             }
-                        } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            // Compress (0.6 quality for gallery)
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                            tempImages[index] = dataUrl; // Keep order
+
+                            processedCount++;
+                            if (processedCount === files.length) {
+                                // All done
+                                currentImages = tempImages.filter(x => x); // Remove empty
+                                updateGalleryPreview();
+
+                                // Set main image input
+                                if (currentImages.length > 0) {
+                                    document.getElementById('p-img').value = currentImages[0];
+                                }
+
+                                label.textContent = "✅ " + currentImages.length + " Images";
+                                setTimeout(() => label.textContent = originalText, 2000);
                             }
                         }
-
-                        canvas.width = width;
-                        canvas.height = height;
-
-                        // Draw and compress
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        // Convert to Base64 JPEG with low quality (0.7)
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-
-                        // Auto-fill input
-                        document.getElementById('p-img').value = dataUrl;
-
-                        // Show preview
-                        const preview = document.getElementById('img-preview');
-                        preview.src = dataUrl;
-                        preview.style.display = 'block';
-
-                        // Reset button
-                        label.textContent = "✅ Image Prête";
-                        label.style.background = "#28a745";
-                        label.style.opacity = "1";
-                        setTimeout(() => {
-                            label.textContent = originalText;
-                            label.style.background = "var(--paris-blue)";
-                        }, 2000);
-
-                        console.log("Image compressed. Original size: " + (e.target.result.length / 1024).toFixed(2) + "KB. New size: " + (dataUrl.length / 1024).toFixed(2) + "KB");
                     }
-                }
-
-                reader.readAsDataURL(file);
+                    reader.readAsDataURL(file);
+                });
             }
+        }
+
+        function updateGalleryPreview() {
+            const container = document.getElementById('gallery-preview');
+            container.innerHTML = '';
+
+            currentImages.forEach((img, idx) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'position: relative; width: 60px; height: 60px; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;';
+
+                const imageEl = document.createElement('img');
+                imageEl.src = img;
+                imageEl.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+
+                const removeBtn = document.createElement('span');
+                removeBtn.innerHTML = '×';
+                removeBtn.style.cssText = 'position: absolute; top: 0; right: 0; background: red; color: white; width: 15px; height: 15px; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer;';
+                removeBtn.onclick = () => {
+                    currentImages.splice(idx, 1);
+                    updateGalleryPreview();
+                    if (currentImages.length > 0) {
+                        document.getElementById('p-img').value = currentImages[0];
+                    } else {
+                        document.getElementById('p-img').value = '';
+                    }
+                };
+
+                div.appendChild(imageEl);
+                div.appendChild(removeBtn);
+                container.appendChild(div);
+            });
+
+            // Also sync manual URL input if changed manually
+            // (Not handled here deeply, assuming upload button is primary)
         }
 
         function updatePreview() {

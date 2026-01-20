@@ -611,6 +611,24 @@ function openProductModal(id) {
     badge.textContent = p.stock === 'out' ? 'RUPTURE DE STOCK' : 'EN STOCK ✅';
     badge.className = `stock-badge ${p.stock === 'out' ? 'out' : ''}`;
 
+    // Gallery Logic 📸
+    const existingGallery = document.querySelector('.thumbnails-container');
+    if (existingGallery) existingGallery.remove(); // Cleanup old gallery
+
+    if (p.images && p.images.length > 1) {
+        const galleryDiv = document.createElement('div');
+        galleryDiv.className = 'thumbnails-container';
+        galleryDiv.innerHTML = p.images.map((img, idx) => `
+            <div class="thumbnail ${idx === 0 ? 'active' : ''}" onclick="changeModalImage('${img}', this)">
+                <img src="${img}" alt="Thumbnail">
+            </div>
+        `).join('');
+
+        // Insert after image container
+        const imgContainer = document.querySelector('.modal-image-container');
+        if (imgContainer) imgContainer.parentNode.insertBefore(galleryDiv, imgContainer.nextSibling);
+    }
+
     // Sizes Logic
     const sizeContainer = document.getElementById('size-options');
     sizeContainer.innerHTML = (p.sizes || ["Standard"]).map(s => `
@@ -638,6 +656,26 @@ function openProductModal(id) {
             sendToWhatsApp(p);
         };
     }
+}
+
+function changeModalImage(src, thumb) {
+    const modalImage = document.getElementById('modal-image');
+
+    // Animate change
+    modalImage.style.opacity = '0';
+    setTimeout(() => {
+        modalImage.src = src;
+        modalImage.onload = () => {
+            modalImage.style.opacity = '1';
+        }
+    }, 200);
+
+    // Update active thumb
+    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+    if (thumb) thumb.classList.add('active');
+
+    // Reset Zoom
+    if (typeof resetZoom === 'function') resetZoom();
 }
 
 function initImageZoom() {
