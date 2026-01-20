@@ -154,19 +154,63 @@ function initDynamicFeatures() {
         });
     }, { passive: true });
 
-    // Magnetic Buttons logic
+    // V4: ELASTIC MAGNETIC BUTTONS (Gooey Physics)
     const magneticItems = document.querySelectorAll('.magnetic');
-    magneticItems.forEach(item => {
-        item.addEventListener('mousemove', (e) => {
-            const rect = item.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
 
-            item.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+    magneticItems.forEach(item => {
+        let bounds;
+
+        function rotateToMouse(e) {
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            const leftX = mouseX - bounds.x;
+            const topY = mouseY - bounds.y;
+            const center = {
+                x: leftX - bounds.width / 2,
+                y: topY - bounds.height / 2
+            };
+
+            // Elastic Spring Effect
+            item.style.transform = `
+                scale(1.05)
+                translate(${center.x * 0.5}px, ${center.y * 0.5}px)
+            `;
+
+            // Interactive glow
+            const glow = item.querySelector('.glow-effect') || document.createElement('div');
+            if (!item.querySelector('.glow-effect')) {
+                glow.classList.add('glow-effect');
+                glow.style.cssText = `
+                    position: absolute; width: 40px; height: 40px;
+                    background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+                    border-radius: 50%; pointer-events: none; mix-blend-mode: overlay;
+                    transition: opacity 0.3s;
+                    transform: translate(-50%, -50%);
+                `;
+                item.appendChild(glow);
+                item.style.overflow = 'hidden';
+                if (getComputedStyle(item).position === 'static') item.style.position = 'relative';
+            }
+            glow.style.left = `${leftX}px`;
+            glow.style.top = `${topY}px`;
+            glow.style.opacity = '1';
+        }
+
+        item.addEventListener('mouseenter', () => {
+            bounds = item.getBoundingClientRect();
+            document.addEventListener('mousemove', rotateToMouse);
+            // Remove lingering transition for snap
+            item.style.transition = '';
         });
 
         item.addEventListener('mouseleave', () => {
-            item.style.transform = `translate(0px, 0px)`;
+            document.removeEventListener('mousemove', rotateToMouse);
+            // Elastic Snapback
+            item.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            item.style.transform = '';
+
+            const glow = item.querySelector('.glow-effect');
+            if (glow) glow.style.opacity = '0';
         });
     });
 
@@ -1236,3 +1280,90 @@ function subscribeNewsletter() {
         showNotification("Veuillez entrer un email valide", "error");
     }
 }
+
+// --- V4: MATRIX DECODE TEXT ---
+const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#$%&";
+
+function matrixReveal(element) {
+    const originalText = element.dataset.originalText || element.innerText;
+    if (!element.dataset.originalText) element.dataset.originalText = originalText;
+
+    let iterations = 0;
+    const interval = setInterval(() => {
+        element.innerText = originalText.split("")
+            .map((letter, index) => {
+                if (index < iterations) {
+                    return originalText[index];
+                }
+                return matrixChars[Math.floor(Math.random() * matrixChars.length)];
+            })
+            .join("");
+
+        if (iterations >= originalText.length) {
+            clearInterval(interval);
+            element.innerText = originalText; // Ensure final cleanup
+        }
+
+        iterations += 1 / 3; // Speed
+    }, 30);
+}
+
+// Attach Matrix to Headers
+const observerOptionsV4 = { threshold: 0.5 };
+const matrixObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            matrixReveal(entry.target);
+            matrixObserver.unobserve(entry.target);
+        }
+    });
+}, observerOptionsV4);
+
+document.querySelectorAll('h2').forEach(h => matrixObserver.observe(h));
+
+// --- V4: CHAOS CART EXPLOSION 💥 ---
+function triggerChaosParticles(x, y) {
+    const particleCount = 40;
+    const colors = ['#E30613', '#003366', '#FFFFFF', '#FFD700']; // Brand colors + Gold
+
+    for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement('div');
+        p.className = 'chaos-particle';
+        document.body.appendChild(p);
+
+        // Initial Position
+        p.style.left = `${x}px`;
+        p.style.top = `${y}px`;
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+        // Physics
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 150 + 50; // Explosion speed
+        const dx = Math.cos(angle) * velocity;
+        const dy = Math.sin(angle) * velocity;
+
+        // Animation
+        p.animate([
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: `translate(${dx}px, ${dy}px) scale(0)`, opacity: 0 }
+        ], {
+            duration: Math.random() * 800 + 400,
+            easing: 'cubic-bezier(0, .9, .57, 1)',
+        }).onfinish = () => p.remove();
+    }
+}
+
+// Override generic click to catch add-to-cart buttons for V4 effect
+document.body.addEventListener('click', (e) => {
+    if (e.target.classList.contains('add-to-cart-btn') ||
+        e.target.closest('.add-to-cart-btn') ||
+        e.target.classList.contains('quick-shop-btn')) {
+
+        const rect = e.target.getBoundingClientRect();
+        // Trigger explosion at click position or button center
+        const x = e.clientX || (rect.left + rect.width / 2);
+        const y = e.clientY || (rect.top + rect.height / 2);
+
+        triggerChaosParticles(x, y);
+    }
+});
