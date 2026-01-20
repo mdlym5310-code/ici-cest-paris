@@ -640,8 +640,7 @@ function openProductModal(id) {
     // Initialize zoom functionality
     initImageZoom();
 
-    // Initialize Swipe Functionality 👆
-    initSwipeGallery(p);
+    // Swipe logic handled by native scroll-snap above
 
     // Add to Cart / WhatsApp Action
     const addToCartBtn = document.querySelector('.add-to-cart-btn');
