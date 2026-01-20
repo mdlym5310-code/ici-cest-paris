@@ -1,10 +1,15 @@
 {
   "hosting": {
-    "public": "public",
+    "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "FIREBASE_SETUP.md",
+      "GITHUB_PAGES_SETUP.md",
+      "walkthrough.md",
+      "task.md",
+      "database.rules.json"
     ],
     "rewrites": [
       {
@@ -12,5 +17,8 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }

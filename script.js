@@ -79,13 +79,74 @@ async function initApp() {
 
 // Initialize dynamic features
 function initDynamicFeatures() {
+    // Luxury Cursor Logic
+    const dot = document.querySelector('.cursor-dot');
+    const outline = document.querySelector('.cursor-outline');
+
+    if (dot && outline) {
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            dot.style.left = `${posX}px`;
+            dot.style.top = `${posY}px`;
+
+            // Outline follows with a slight delay
+            outline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+
+            // Hover effects
+            const target = e.target;
+            const isClickable = target.closest('a') || target.closest('button') || target.closest('.product-card') || target.closest('.size-pill');
+
+            if (isClickable) {
+                outline.style.width = '60px';
+                outline.style.height = '60px';
+                outline.style.background = 'rgba(227, 6, 19, 0.1)';
+                outline.style.borderColor = 'var(--paris-red)';
+            } else {
+                outline.style.width = '30px';
+                outline.style.height = '30px';
+                outline.style.background = 'transparent';
+                outline.style.borderColor = 'var(--paris-blue)';
+            }
+        });
+    }
+
+    // Scroll Progress & Navbar Effects
+    const progressBar = document.getElementById('scroll-progress');
+    const navbar = document.querySelector('.navbar');
+
+    window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+
+        if (progressBar) progressBar.style.width = scrolled + "%";
+
+        // Navbar luxury shift
+        if (navbar) {
+            if (window.scrollY > 50) {
+                navbar.style.padding = '10px 0';
+                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+                navbar.style.boxShadow = '0 10px 30px rgba(0, 51, 102, 0.15)';
+            } else {
+                navbar.style.padding = '20px 0';
+                navbar.style.background = 'rgba(255, 255, 255, 0.85)';
+                navbar.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.1)';
+            }
+        }
+    });
+
     // Smooth parallax (rAF-throttled)
     let parallaxRaf = null;
     window.addEventListener('scroll', () => {
         if (parallaxRaf) return;
         parallaxRaf = requestAnimationFrame(() => {
             parallaxRaf = null;
-            const scrolled = window.pageYOffset || 0;
+            const scrolled = window.scrollY || 0;
             const hero = document.querySelector('.hero');
             if (hero) {
                 hero.style.transform = `translate3d(0, ${Math.min(scrolled * 0.25, 80)}px, 0)`;
@@ -93,20 +154,35 @@ function initDynamicFeatures() {
         });
     }, { passive: true });
 
-    // Product card tilt: only for the hovered card (no global loop every mousemove)
+    // Magnetic Buttons logic
+    const magneticItems = document.querySelectorAll('.magnetic');
+    magneticItems.forEach(item => {
+        item.addEventListener('mousemove', (e) => {
+            const rect = item.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+
+            item.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+        });
+
+        item.addEventListener('mouseleave', () => {
+            item.style.transform = `translate(0px, 0px)`;
+        });
+    });
+
+    // Product card tilt
     document.addEventListener('pointermove', (e) => {
         const card = e.target && e.target.closest ? e.target.closest('.product-card') : null;
         if (!card) return;
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
 
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        const rotateX = (y - centerY) / 28;
-        const rotateY = (centerX - x) / 28;
-        card.style.transform = `translateY(-12px) scale(1.02) perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        const rotateX = (y - centerY) / 25;
+        const rotateY = (centerX - x) / 25;
+        card.style.transform = `translateY(-15px) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.04)`;
     }, { passive: true });
 
     document.addEventListener('pointerleave', (e) => {
@@ -825,9 +901,28 @@ function sendCartToWhatsApp() {
 // --- UTILS ---
 function triggerReveal() {
     const reveals = document.querySelectorAll('.reveal-item');
+
+    // Intersection Observer for Scroll Animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); });
-    }, { threshold: 0.1 });
+        let delayCount = 0;
+        entries.forEach((entry) => {
+            if (entry.isIntersecting && !entry.target.classList.contains('active')) {
+                // Apply staggered delay for items visible at the same time
+                const item = entry.target;
+                if (!item.style.transitionDelay) {
+                    item.style.transitionDelay = `${delayCount * 0.1}s`;
+                    delayCount++;
+                }
+                item.classList.add('active');
+            }
+        });
+    }, observerOptions);
+
     reveals.forEach(r => observer.observe(r));
 }
 
