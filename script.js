@@ -157,6 +157,10 @@ function initDynamicFeatures() {
     // V4: ELASTIC MAGNETIC BUTTONS (Gooey Physics)
     const magneticItems = document.querySelectorAll('.magnetic');
 
+    // Disable on mobile/touch devices
+    const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    if (isTouch) return;
+
     magneticItems.forEach(item => {
         let bounds;
 
@@ -1323,7 +1327,9 @@ document.querySelectorAll('h2').forEach(h => matrixObserver.observe(h));
 
 // --- V4: CHAOS CART EXPLOSION 💥 ---
 function triggerChaosParticles(x, y) {
-    const particleCount = 40;
+    // V5 Optimization: Reduce count on mobile/small screens
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 15 : 40; // 40 on Desktop, 15 on Mobile
     const colors = ['#E30613', '#003366', '#FFFFFF', '#FFD700']; // Brand colors + Gold
 
     for (let i = 0; i < particleCount; i++) {

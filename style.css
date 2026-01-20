@@ -2000,3 +2000,82 @@ button:active {
 .add-to-cart-btn:active {
     transform: scale(0.98);
 }
+
+/* --- V5: MOBILE POLISH & OPTIMIZATIONS 📱 --- */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Disable Custom Cursor on Touch */
+    .cursor-dot,
+    .cursor-outline {
+        display: none !important;
+    }
+
+    /* Disable Magnetic Hover Effects */
+    .magnetic {
+        transform: none !important;
+        transition: none !important;
+    }
+
+    /* Reset any persistent transforms */
+    .magnetic[style] {
+        transform: none !important;
+    }
+
+    /* Disable Glitch on Touch to prevent sticking */
+    .logo:hover {
+        animation: none;
+    }
+
+    .logo:hover::before,
+    .logo:hover::after {
+        display: none;
+    }
+
+    /* Disable 3D Tilt */
+    .product-card {
+        transform: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Typography Adjustments */
+    .hero h2 {
+        font-size: 3rem;
+        /* Smaller than desktop */
+    }
+
+    /* Product Grid: Strict 2 Columns */
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 0 10px;
+    }
+
+    .product-card {
+        margin-bottom: 15px;
+    }
+
+    .product-info h3 {
+        font-size: 0.9rem;
+    }
+
+    .price {
+        font-size: 1rem;
+    }
+
+    /* Navbar Mobile Tweaks */
+    .navbar {
+        padding: 15px 10px;
+    }
+
+    .nav-links {
+        gap: 15px;
+        font-size: 0.8rem;
+    }
+
+    /* Newsletter Stack */
+    .newsletter-section {
+        padding: 40px 20px;
+    }
+}
