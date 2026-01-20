@@ -581,27 +581,15 @@ function openProductModal(id) {
 
     selectedSize = null; // Reset selection
     const modal = document.getElementById('product-modal');
-    const modalImage = document.getElementById('modal-image');
-
     // Reset zoom when opening modal
     imageZoom.scale = 1;
     imageZoom.panX = 0;
     imageZoom.panY = 0;
-    applyImageTransform();
+    // applyImageTransform(); // Zoom disabled for now
 
-    // Show loader and reset image
+    // Show loader
     const loader = document.getElementById('image-loader');
     if (loader) loader.classList.remove('hidden');
-    modalImage.classList.remove('loaded');
-
-    modalImage.src = p.image;
-    modalImage.onload = () => {
-        hideImageLoader();
-        modalImage.classList.add('loaded');
-    };
-    modalImage.onerror = () => {
-        handleImageError(modalImage);
-    };
 
     document.getElementById('modal-name').textContent = p.name;
     document.getElementById('modal-price').textContent = p.displayPrice || p.price + ' DA';
@@ -724,16 +712,8 @@ function initImageZoom() {
     const imageWrapper = document.querySelector('.image-zoom-wrapper');
     if (!modalImage || !imageContainer) return;
 
-    // Reset zoom state
-    imageZoom.scale = 1;
-    imageZoom.panX = 0;
-    imageZoom.panY = 0;
-    applyImageTransform();
-
-    // Setup zoom control buttons (do this every time modal opens)
-    const zoomInBtn = document.getElementById('zoom-in');
-    const zoomOutBtn = document.getElementById('zoom-out');
-    const zoomResetBtn = document.getElementById('zoom-reset');
+    // Zoom disabled for native swipe gallery
+    return;
 
     if (zoomInBtn) {
         zoomInBtn.onclick = (e) => {
@@ -952,11 +932,22 @@ function updateCartCount() {
 }
 
 function addToCart(product, size) {
+    // Sanitize price (remove commas, spaces, 'DA')
+    let rawPrice = product.price;
+    let cleanPrice = 0;
+    
+    if (typeof rawPrice === 'number') {
+        cleanPrice = rawPrice;
+    } else if (typeof rawPrice === 'string') {
+        // Remove everything except digits and dots
+        cleanPrice = parseFloat(rawPrice.replace(/[^0-9.]/g, '')) || 0;
+    }
+
     const cartItem = {
         id: Date.now(),
         productId: product.id,
         name: product.name,
-        price: product.price,
+        price: cleanPrice,
         displayPrice: product.displayPrice || product.price + ' DA',
         image: product.image,
         size: size || 'Standard',
