@@ -24,7 +24,9 @@ body {
     color: var(--cod-gray);
     line-height: 1.6;
     overflow-x: hidden;
+    /* Fix Horizontal Scroll */
     position: relative;
+    width: 100%;
 }
 
 body::before {
@@ -2041,8 +2043,8 @@ button:active {
 
     /* Typography Adjustments */
     .hero h2 {
-        font-size: 3rem;
-        /* Smaller than desktop */
+        font-size: clamp(2.5rem, 8vw, 3.5rem) !important;
+        line-height: 1.1;
     }
 
     /* Product Grid: Strict 2 Columns */
@@ -2066,16 +2068,38 @@ button:active {
 
     /* Navbar Mobile Tweaks */
     .navbar {
-        padding: 15px 10px;
+        padding: 10px 5px;
     }
 
     .nav-links {
-        gap: 15px;
-        font-size: 0.8rem;
+        display: none;
     }
 
     /* Newsletter Stack */
     .newsletter-section {
         padding: 40px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Ultra-Mobile Fixes */
+    .navbar-content {
+        justify-content: space-between;
+        padding: 0 5px;
+    }
+
+    .logo a {
+        font-size: 1.4rem !important;
+    }
+
+    .search-bar {
+        display: none;
+    }
+
+    /* Cart Sidebar Fix */
+    .cart-sidebar {
+        width: 85%;
+        transform: translateX(110%);
     }
 }
