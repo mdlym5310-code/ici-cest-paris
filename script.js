@@ -424,6 +424,9 @@ function renderProducts(pList) {
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                 </button>
+                <button class="quick-shop-btn" onclick="event.stopPropagation(); addToCart(${p.id})">
+                    AJOUT RAPIDE
+                </button>
                 ${p.oldPrice ? '<div class="discount-label">PROMO</div>' : ''}
                 <img src="${p.image}" 
                      alt="${p.name}" 
@@ -1077,4 +1080,159 @@ function animateCounter(element, target, duration = 2000) {
             element.textContent = Math.floor(current);
         }
     }, 16);
+}
+
+// --- SOCIAL PROOF: LIVE SALES ---
+const salesNames = ["Amine", "Mohamed", "Yacine", "Karim", "Sofiane", "Mehdi", "Walid", "Nassim", "Anis", "Omar"];
+const salesCities = ["Alger", "Oran", "Constantine", "Annaba", "Blida", "Sétif", "Batna", "Tlemcen", "Béjaïa", "Tizi Ouzou"];
+const salesProducts = [
+    "Ensemble Nike Tech - Noir",
+    "Ensemble Ralph Lauren - Gris",
+    "Ensemble Lacoste - Bleu Nuit",
+    "Ensemble Under Armour - Kaki",
+    "Ensemble Puma - Blanc"
+];
+
+function initSalesNotifications() {
+    const notification = document.getElementById('sales-notification');
+    const message = document.getElementById('sales-message');
+    const product = document.getElementById('sales-product');
+
+    if (!notification) return;
+
+    function showSale() {
+        // Random Data
+        const name = salesNames[Math.floor(Math.random() * salesNames.length)];
+        const city = salesCities[Math.floor(Math.random() * salesCities.length)];
+        const item = salesProducts[Math.floor(Math.random() * salesProducts.length)];
+
+        // Populate
+        message.innerHTML = `<strong>${name}</strong> à <strong>${city}</strong> a commandé`;
+        product.textContent = item;
+
+        // Show
+        notification.classList.add('active');
+
+        // Play subtle pop
+        playNotificationSound();
+
+        // Hide after 5s
+        setTimeout(() => {
+            notification.classList.remove('active');
+        }, 5000);
+
+        // Schedule next (random 15-45s)
+        const nextTime = Math.random() * 30000 + 15000;
+        setTimeout(showSale, nextTime);
+    }
+
+    // Start loop after initial delay
+    setTimeout(showSale, 5000);
+}
+
+// --- AUDIO UI (ASMR) ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function resumeAudio() {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+document.addEventListener('click', resumeAudio, { once: true });
+
+function playHoverSound() {
+    if (audioCtx.state === 'suspended') return;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+
+    gainNode.gain.setValueAtTime(0.01, audioCtx.currentTime); // Very subtle
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
+
+function playClickSound() {
+    if (audioCtx.state === 'suspended') return;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+
+    gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
+
+function playNotificationSound() {
+    if (audioCtx.state === 'suspended') return;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+
+    gainNode.gain.setValueAtTime(0.03, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.2);
+}
+
+function initAudioUI() {
+    // Attach to interactive elements
+    const interactive = document.querySelectorAll('button, a, .product-card, .size-pill, .wishlist-btn');
+
+    interactive.forEach(el => {
+        el.addEventListener('mouseenter', () => playHoverSound());
+        el.addEventListener('click', () => playClickSound()); // Note: native click sound might clash, but for now it's fine
+    });
+}
+
+// Call new initializers
+document.addEventListener('DOMContentLoaded', () => {
+    initSalesNotifications();
+    setTimeout(initAudioUI, 1000); // Wait for DOM to settle
+});
+
+function subscribeNewsletter() {
+    const email = document.getElementById('newsletter-email').value;
+    if (email && email.includes('@')) {
+        showNotification("Bienvenue dans le Club ! 🥂", "success");
+        // Play success sound
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+
+        document.getElementById('newsletter-email').value = '';
+    } else {
+        showNotification("Veuillez entrer un email valide", "error");
+    }
 }

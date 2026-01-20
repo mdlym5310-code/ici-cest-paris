@@ -1595,6 +1595,191 @@ html {
     width: 100%;
 }
 
+/* --- SALES NOTIFICATION --- */
+.sales-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-left: 4px solid var(--paris-blue);
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transform: translateX(-150%);
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    z-index: 9990;
+    font-size: 13px;
+    min-width: 280px;
+}
+
+.sales-notification.active {
+    transform: translateX(0);
+}
+
+.sales-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.sales-icon {
+    font-size: 20px;
+}
+
+.sales-text p {
+    margin: 0;
+    color: var(--cod-gray);
+    line-height: 1.2;
+}
+
+.sales-text small {
+    color: var(--paris-red);
+    font-weight: 600;
+}
+
+.sales-time {
+    color: #999;
+    font-size: 10px;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+.sales-time {
+    color: #999;
+    font-size: 10px;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+/* --- QUICK SHOP BUTTON --- */
+.quick-shop-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translate(-50%, 20px);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--cod-gray);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.product-image:hover .quick-shop-btn {
+    opacity: 1;
+    transform: translate(-50%, -10px);
+}
+
+.quick-shop-btn:hover {
+    background: var(--paris-blue);
+    color: white;
+    transform: translate(-50%, -12px);
+}
+
+/* --- NEWSLETTER SECTION --- */
+.newsletter-section {
+    position: relative;
+    padding: 80px 20px;
+    margin-top: 50px;
+    text-align: center;
+    overflow: hidden;
+    border-radius: 20px;
+    margin: 50px 20px;
+}
+
+.newsletter-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+    backdrop-filter: blur(20px);
+    z-index: -1;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+}
+
+.newsletter-content h2 {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, var(--paris-blue), var(--paris-red));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.newsletter-content p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.newsletter-form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.newsletter-form input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 1px solid rgba(0, 51, 102, 0.1);
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.8);
+    font-family: var(--font-body);
+    transition: all 0.3s;
+}
+
+.newsletter-form input:focus {
+    outline: none;
+    border-color: var(--paris-blue);
+    box-shadow: 0 0 15px rgba(0, 51, 102, 0.1);
+}
+
+.newsletter-form button {
+    padding: 15px 30px;
+    background: var(--cod-gray);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.newsletter-form button:hover {
+    background: var(--paris-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 51, 102, 0.2);
+}
+
+@media (max-width: 768px) {
+    .newsletter-form {
+        flex-direction: column;
+    }
+
+    .newsletter-form button {
+        width: 100%;
+    }
+}
+
 /* Enhanced Reveal */
 .reveal-item {
     opacity: 0;
