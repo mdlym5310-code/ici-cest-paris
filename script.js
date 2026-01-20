@@ -419,6 +419,35 @@ function initImageZoom() {
     imageZoom.panY = 0;
     applyImageTransform();
     
+    // Setup zoom control buttons (do this every time modal opens)
+    const zoomInBtn = document.getElementById('zoom-in');
+    const zoomOutBtn = document.getElementById('zoom-out');
+    const zoomResetBtn = document.getElementById('zoom-reset');
+    
+    if (zoomInBtn) {
+        zoomInBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            zoomIn();
+        };
+    }
+    
+    if (zoomOutBtn) {
+        zoomOutBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            zoomOut();
+        };
+    }
+    
+    if (zoomResetBtn) {
+        zoomResetBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            resetZoom();
+        };
+    }
+    
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
     
@@ -540,9 +569,9 @@ function initImageZoom() {
 
 function zoomImage(delta, centerX, centerY) {
     const oldScale = imageZoom.scale;
-    imageZoom.scale = Math.max(imageZoom.minScale, Math.min(imageZoom.maxScale, imageZoom.scale + delta));
+    const newScale = Math.max(imageZoom.minScale, Math.min(imageZoom.maxScale, imageZoom.scale + delta));
     
-    if (centerX && centerY) {
+    if (centerX !== undefined && centerY !== undefined) {
         const imageContainer = document.querySelector('.modal-image-container');
         if (imageContainer) {
             const rect = imageContainer.getBoundingClientRect();
@@ -550,11 +579,12 @@ function zoomImage(delta, centerX, centerY) {
             const relativeY = centerY - rect.top - rect.height / 2;
             
             // Calculate zoom point relative to image center
-            imageZoom.panX += -relativeX * (imageZoom.scale - oldScale);
-            imageZoom.panY += -relativeY * (imageZoom.scale - oldScale);
+            imageZoom.panX += -relativeX * (newScale - oldScale);
+            imageZoom.panY += -relativeY * (newScale - oldScale);
         }
     }
     
+    imageZoom.scale = newScale;
     applyImageTransform();
 }
 
@@ -612,7 +642,9 @@ function zoomIn() {
     const container = document.querySelector('.modal-image-container');
     if (container) {
         const rect = container.getBoundingClientRect();
-        zoomImage(0.5, rect.left + rect.width / 2, rect.top + rect.height / 2);
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        zoomImage(0.3, centerX, centerY);
     }
 }
 
@@ -620,7 +652,9 @@ function zoomOut() {
     const container = document.querySelector('.modal-image-container');
     if (container) {
         const rect = container.getBoundingClientRect();
-        zoomImage(-0.5, rect.left + rect.width / 2, rect.top + rect.height / 2);
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        zoomImage(-0.3, centerX, centerY);
     }
 }
 
