@@ -34,7 +34,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
+    background:
         radial-gradient(circle at 20% 50%, rgba(227, 6, 19, 0.4) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(0, 51, 102, 0.4) 0%, transparent 50%),
         radial-gradient(circle at 40% 20%, rgba(227, 6, 19, 0.3) 0%, transparent 50%);
@@ -44,9 +44,12 @@ body::before {
 }
 
 @keyframes backgroundShift {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translate(0, 0) scale(1);
     }
+
     50% {
         transform: translate(20px, -20px) scale(1.1);
     }
@@ -172,6 +175,7 @@ body::before {
     0% {
         background-position: 0% 50%;
     }
+
     100% {
         background-position: 200% 50%;
     }
@@ -262,7 +266,7 @@ body::before {
     z-index: 1;
 }
 
-/* --- HERO --- */
+/* --- HERO (Enhanced) --- */
 .hero {
     height: 70vh;
     background: linear-gradient(135deg, rgba(227, 6, 19, 0.2), rgba(0, 51, 102, 0.2));
@@ -270,39 +274,10 @@ body::before {
     overflow: hidden;
 }
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: 
-        radial-gradient(circle, rgba(227, 6, 19, 0.3) 0%, transparent 70%),
-        radial-gradient(circle, rgba(0, 51, 102, 0.3) 0%, transparent 70%);
-    filter: blur(60px);
-    animation: heroPulse 8s ease-in-out infinite;
-}
-
-@keyframes heroPulse {
-    0%, 100% {
-        transform: translate(0, 0) scale(1);
-        opacity: 0.6;
-    }
-    50% {
-        transform: translate(30px, -30px) scale(1.2);
-        opacity: 0.8;
-    }
-}
-
-/* Slider Styles */
-.slider {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-
-.slides {
+/* Slider Styles (Restored) */
+.slider,
+.slides,
+.slide {
     position: relative;
     width: 100%;
     height: 100%;
@@ -312,8 +287,6 @@ body::before {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
     opacity: 0;
     transition: opacity 1s ease-in-out;
     background-size: cover;
@@ -363,6 +336,92 @@ body::before {
     text-align: center;
     color: white;
     z-index: 10;
+    width: 80%;
+}
+
+.hero-content h2,
+.hero-content p,
+.hero-content button {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.slide.active .hero-content h2 {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.3s;
+}
+
+.slide.active .hero-content p {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.5s;
+}
+
+.slide.active .hero-content button {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.7s;
+}
+
+/* --- WISHLIST BUTTON --- */
+.wishlist-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 18px;
+    color: #ccc;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-btn:hover {
+    transform: scale(1.15);
+    background: white;
+    box-shadow: 0 5px 15px rgba(227, 6, 19, 0.3);
+}
+
+.wishlist-btn.active {
+    color: var(--paris-red);
+}
+
+.wishlist-btn.active svg {
+    fill: var(--paris-red);
+    stroke: var(--paris-red);
+    animation: heartBeat 0.4s;
+}
+
+@keyframes heartBeat {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.4);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Glassmorphism Refinement */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
 .hero-content h2 {
@@ -415,7 +474,7 @@ body::before {
     opacity: 1;
 }
 
-.product-card > * {
+.product-card>* {
     position: relative;
     z-index: 1;
 }
@@ -510,6 +569,7 @@ body::before {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -535,6 +595,7 @@ body::before {
         transform: scale(0.8) translateY(50px);
         opacity: 0;
     }
+
     to {
         transform: scale(1) translateY(0);
         opacity: 1;
@@ -660,7 +721,36 @@ body::before {
     padding: 50px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
+    /* Reduced gap slightly */
+}
+
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--paris-blue);
+    background: rgba(0, 51, 102, 0.05);
+    /* Subtle blue background */
+    padding: 5px 12px;
+    border-radius: 20px;
+    width: fit-content;
+    border: 1px solid rgba(0, 51, 102, 0.1);
+    animation: slideRight 0.5s ease-out;
+}
+
+@keyframes slideRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .size-selection p {
@@ -779,9 +869,12 @@ body::before {
 
 /* Floating Animation */
 @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0px);
     }
+
     50% {
         transform: translateY(-20px);
     }
@@ -793,9 +886,12 @@ body::before {
 
 /* Pulse Animation */
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.05);
     }
@@ -810,6 +906,7 @@ body::before {
     0% {
         background-position: -1000px 0;
     }
+
     100% {
         background-position: 1000px 0;
     }
@@ -922,7 +1019,8 @@ body::before {
     box-shadow: 0 10px 30px rgba(40, 167, 69, 0.4);
 }
 
-.close-modal, .close-cart {
+.close-modal,
+.close-cart {
     position: absolute;
     top: 20px;
     right: 20px;
@@ -941,7 +1039,8 @@ body::before {
     background: rgba(255, 255, 255, 0.9);
 }
 
-.close-modal:hover, .close-cart:hover {
+.close-modal:hover,
+.close-cart:hover {
     transform: rotate(90deg) scale(1.1);
     background: var(--paris-red);
     color: white;
@@ -973,6 +1072,7 @@ body::before {
         transform: translateX(400px);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -1148,7 +1248,9 @@ footer {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Empty State */
@@ -1214,7 +1316,7 @@ html {
     .mobile-menu-toggle {
         display: flex;
     }
-    
+
     .nav-links {
         position: fixed;
         top: var(--nav-height);
@@ -1229,34 +1331,34 @@ html {
         transition: transform 0.3s ease;
         z-index: 1000;
     }
-    
+
     .nav-links.active {
         transform: translateX(0);
     }
-    
+
     .nav-links a {
         padding: 15px 0;
         border-bottom: 1px solid #eee;
     }
-    
+
     .nav-icons {
         position: static;
         transform: none;
         margin-top: 10px;
     }
-    
+
     .search-bar {
         order: 2;
     }
-    
+
     .search-bar input {
         width: 150px;
     }
-    
+
     .search-bar input:focus {
         width: 180px;
     }
-    
+
     .modal-content {
         grid-template-columns: 1fr;
         height: 90vh;
@@ -1266,19 +1368,19 @@ html {
     .modal-image-container {
         height: 400px;
     }
-    
+
     .zoom-controls {
         top: 10px;
         right: 10px;
         gap: 8px;
     }
-    
+
     .zoom-btn {
         width: 35px;
         height: 35px;
         font-size: 20px;
     }
-    
+
     .zoom-hint {
         font-size: 10px;
         padding: 6px 12px;
@@ -1292,14 +1394,14 @@ html {
     .section-header h2 {
         font-size: 32px;
     }
-    
+
     .back-to-top {
         bottom: 20px;
         right: 20px;
         width: 45px;
         height: 45px;
     }
-    
+
     .footer-container {
         grid-template-columns: 1fr;
         padding: 40px 20px 20px;

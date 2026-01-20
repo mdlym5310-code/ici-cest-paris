@@ -91,7 +91,18 @@
     <div class="admin-wrap" id="admin-interface" style="display:none;">
         <h1 style="color:var(--paris-blue); margin-bottom: 30px;">Gestion ici.c'est.PARIS</h1>
         <div id="firebase-status" style="margin-bottom: 20px; padding: 15px; border-radius: 10px; font-weight: 700;">
-            <span id="status-icon">⏳</span> <span id="status-text">Vérification de la connexion Firebase...</span>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span id="status-icon">⏳</span> <span id="status-text">Vérification de la connexion
+                        Firebase...</span>
+                </div>
+                <button onclick="testFirebaseConnection()"
+                    style="padding: 5px 15px; border-radius: 5px; border:none; background:#003366; color:white; cursor:pointer; font-weight:bold; font-size:12px;">TESTER
+                    DIAGNOSTIC 🛠️</button>
+            </div>
+            <div id="test-results"
+                style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(0,0,0,0.1); font-size:12px; display:none;">
+            </div>
         </div>
 
         <div class="form-group">
@@ -156,25 +167,26 @@
          * }
          */
         const firebaseConfig = {
-            apiKey: "AIzaSyAs-EXAMPLE-PLACEHOLDER",
-            authDomain: "ici-cest-paris-store.firebaseapp.com",
-            databaseURL: "https://ici-cest-paris-store-default-rtdb.firebaseio.com",
-            projectId: "ici-cest-paris-store",
-            storageBucket: "ici-cest-paris-store.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
+            apiKey: "AIzaSyAGnZtxU3qb47Wfa9D33u-NFllnawt4rCY",
+            authDomain: "ici-cest-paris-4e9d5.firebaseapp.com",
+            databaseURL: "https://ici-cest-paris-4e9d5-default-rtdb.firebaseio.com",
+            projectId: "ici-cest-paris-4e9d5",
+            storageBucket: "ici-cest-paris-4e9d5.firebasestorage.app",
+            messagingSenderId: "307044964156",
+            appId: "1:307044964156:web:9fe8757d90a24abe5eb039",
+            measurementId: "G-YF7V1CKQVR"
         };
-        
+
         let database;
-        
+
         // Check if Firebase config is still using placeholder values
-        const isPlaceholderConfig = firebaseConfig.apiKey.includes('EXAMPLE') || 
-                                    firebaseConfig.apiKey === 'AIzaSyAs-EXAMPLE-PLACEHOLDER';
-        
+        const isPlaceholderConfig = firebaseConfig.apiKey.includes('EXAMPLE') ||
+            firebaseConfig.apiKey === 'AIzaSyAs-EXAMPLE-PLACEHOLDER';
+
         if (isPlaceholderConfig) {
             console.warn("⚠️ Firebase config uses placeholder values!");
             console.log("📝 Please update firebaseConfig in admin.html with your actual Firebase credentials");
-            
+
             // Show warning in UI
             setTimeout(() => {
                 const adminWrap = document.getElementById('admin-interface');
@@ -198,13 +210,13 @@
                 }
             }, 500);
         }
-        
+
         try {
             if (typeof firebase !== 'undefined') {
                 firebase.initializeApp(firebaseConfig);
                 database = firebase.database();
                 console.log("✅ Firebase Admin initialized successfully");
-                
+
                 // Test connection
                 database.ref('.info/connected').on('value', (snap) => {
                     if (snap.val() === true) {
@@ -240,13 +252,13 @@
             if (isNaN(numPrice)) return price;
             return numPrice.toLocaleString('fr-FR');
         }
-        
+
         // Update price preview
         function updatePricePreview() {
             const priceInput = document.getElementById('p-price');
             const preview = document.getElementById('price-preview');
             const price = priceInput.value.trim();
-            
+
             if (price && !isNaN(price) && parseInt(price) > 0) {
                 const formatted = formatPrice(price);
                 preview.textContent = `Aperçu: ${formatted} DA`;
@@ -260,7 +272,7 @@
                 preview.style.display = 'none';
             }
         }
-        
+
         // Add event listener for price input
         document.addEventListener('DOMContentLoaded', () => {
             const priceInput = document.getElementById('p-price');
@@ -277,12 +289,12 @@
             const price = priceInput.value.trim();
             const image = document.getElementById('p-img').value.trim();
             const sizes = document.getElementById('p-sizes').value.trim();
-            
+
             if (!name || !price || !image) {
                 alert("⚠️ Veuillez remplir tous les champs obligatoires (Nom, Prix, Image)");
                 return;
             }
-            
+
             // Validate price is a valid number
             const numPrice = parseInt(price);
             if (isNaN(numPrice) || numPrice <= 0) {
@@ -290,12 +302,12 @@
                 priceInput.focus();
                 return;
             }
-            
+
             if (!database) {
                 alert("❌ Firebase n'est pas configuré. Veuillez configurer Firebase pour enregistrer en ligne.");
                 return;
             }
-            
+
             const id = Date.now();
             const formattedPrice = formatPrice(price);
             const product = {
@@ -328,7 +340,7 @@
                     document.getElementById('p-sizes').value = '';
                     btn.textContent = originalText;
                     btn.disabled = false;
-                    
+
                     // Verify the product was saved
                     setTimeout(() => {
                         database.ref('products/' + id).once('value', (snap) => {
@@ -343,26 +355,26 @@
                 .catch(e => {
                     console.error("❌ Firebase error:", e);
                     let errorMsg = "❌ Erreur lors de l'ajout: " + e.message;
-                    
+
                     // Check if it's a config issue
                     if (e.code === 'auth/configuration-not-found' || e.message.includes('API key')) {
                         errorMsg += "\n\n⚠️ Vérifiez que votre configuration Firebase est correcte dans admin.html";
                     }
-                    
+
                     alert(errorMsg);
                     btn.textContent = originalText;
                     btn.disabled = false;
                 });
         }
-        
+
         // Update Firebase status indicator
         function updateFirebaseStatus(connected, message) {
             const statusDiv = document.getElementById('firebase-status');
             const statusIcon = document.getElementById('status-icon');
             const statusText = document.getElementById('status-text');
-            
+
             if (!statusDiv) return;
-            
+
             if (connected) {
                 statusDiv.style.background = '#d4edda';
                 statusDiv.style.border = '2px solid #28a745';
@@ -377,7 +389,7 @@
                 statusText.textContent = message || 'Non connecté à Firebase';
             }
         }
-        
+
         // Check Firebase connection status
         if (database) {
             database.ref('.info/connected').on('value', (snap) => {
@@ -387,7 +399,7 @@
                     updateFirebaseStatus(false, '❌ Non connecté - Vérifiez votre configuration Firebase');
                 }
             });
-            
+
             // Add real-time product preview
             database.ref('products').on('value', (snapshot) => {
                 const products = snapshot.val();
@@ -399,6 +411,52 @@
             });
         } else {
             updateFirebaseStatus(false, '❌ Firebase non configuré - Consultez FIREBASE_SETUP.md');
+        }
+
+        // Diagnostic Function
+        function testFirebaseConnection() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '🔄 Démarrage du diagnostic...<br>';
+
+            if (!database) {
+                resultsDiv.innerHTML += '<span style="color:red">❌ Erreur: Database non initialisée.</span>';
+                return;
+            }
+
+            const testRef = database.ref('_connection_test');
+            const testData = { timestamp: Date.now(), status: 'test' };
+
+            // Step 1: Write
+            resultsDiv.innerHTML += '📝 Tentative d\'écriture... ';
+            testRef.set(testData)
+                .then(() => {
+                    resultsDiv.innerHTML += '<span style="color:green">OK ✅</span><br>';
+
+                    // Step 2: Read
+                    resultsDiv.innerHTML += '📖 Tentative de lecture... ';
+                    return testRef.once('value');
+                })
+                .then((snap) => {
+                    const val = snap.val();
+                    if (val && val.timestamp === testData.timestamp) {
+                        resultsDiv.innerHTML += '<span style="color:green">OK ✅</span><br>';
+                        resultsDiv.innerHTML += '<strong style="color:green">🎉 SYSTÈME OPÉRATIONNEL À 100%</strong>';
+
+                        // Cleanup
+                        testRef.remove();
+                    } else {
+                        throw new Error("Données corrompues ou non correspondantes");
+                    }
+                })
+                .catch((error) => {
+                    resultsDiv.innerHTML += `<span style="color:red">ÉCHEC ❌</span><br>`;
+                    resultsDiv.innerHTML += `<div style="background:#fff3cd; color:#856404; padding:5px; margin-top:5px; border-radius:5px;">⚠️ Erreur: ${error.message}<br>Code: ${error.code || 'N/A'}</div>`;
+
+                    if (error.code === 'PERMISSION_DENIED') {
+                        resultsDiv.innerHTML += '<br>📢 <strong>Solution:</strong> Vérifiez les Règles de Sécurité (Realtime Database -> Rules). Elles doivent être à ".read": true et ".write": true pour le développement.';
+                    }
+                });
         }
     </script>
 </body>

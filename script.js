@@ -1,35 +1,21 @@
-// --- CONFIG & STATE ---
-/**
- * Firebase Configuration
- * 
- * To set up Firebase:
- * 1. Go to https://console.firebase.google.com/
- * 2. Create a new project or select existing one
- * 3. Enable Realtime Database
- * 4. Copy your config from Project Settings > General > Your apps
- * 5. Replace the placeholder values below with your actual Firebase config
- * 
- * Security Rules Example (Firebase Console > Realtime Database > Rules):
- * {
- *   "rules": {
- *     "products": {
- *       ".read": true,
- *       ".write": false
- *     }
- *   }
- * }
- */
-const firebaseConfig = {
-    apiKey: "AIzaSyAs-EXAMPLE-PLACEHOLDER",
-    authDomain: "ici-cest-paris-store.firebaseapp.com",
-    databaseURL: "https://ici-cest-paris-store-default-rtdb.firebaseio.com",
-    projectId: "ici-cest-paris-store",
-    storageBucket: "ici-cest-paris-store.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
-};
+// Firebase Configuration
+// To set up Firebase:
+// 1. Go to https://console.firebase.google.com/
+// 2. Create a new project or select existing one
+// 3. Enable Realtime Database
+// 4. Copy your config from Project Settings > General > Your apps
 
-// Initialize Firebase if available
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAGnZtxU3qb47Wfa9D33u-NFllnawt4rCY",
+    authDomain: "ici-cest-paris-4e9d5.firebaseapp.com",
+    databaseURL: "https://ici-cest-paris-4e9d5-default-rtdb.firebaseio.com",
+    projectId: "ici-cest-paris-4e9d5",
+    storageBucket: "ici-cest-paris-4e9d5.firebasestorage.app",
+    messagingSenderId: "307044964156",
+    appId: "1:307044964156:web:9fe8757d90a24abe5eb039",
+    measurementId: "G-YF7V1CKQVR"
+};
 if (typeof firebase !== 'undefined') {
     try {
         firebase.initializeApp(firebaseConfig);
@@ -208,7 +194,7 @@ function setupEventListeners() {
             e.preventDefault();
             const category = link.getAttribute('data-category');
             filterProducts(category);
-            
+
             // Update active state
             document.querySelectorAll('[data-category]').forEach(l => l.classList.remove('active'));
             link.classList.add('active');
@@ -250,8 +236,8 @@ function setupEventListeners() {
 // Filter products by category
 function filterProducts(category) {
     const allProducts = products.length > 0 ? products : fallbackProducts;
-    const filtered = category === 'all' 
-        ? allProducts 
+    const filtered = category === 'all'
+        ? allProducts
         : allProducts.filter(p => p.category === category);
     renderProducts(filtered);
     showNotification(`Affichage: ${category === 'all' ? 'Tous les produits' : category}`);
@@ -263,9 +249,9 @@ function searchProducts(query) {
         renderProducts(products.length > 0 ? products : fallbackProducts);
         return;
     }
-    
+
     const allProducts = products.length > 0 ? products : fallbackProducts;
-    const filtered = allProducts.filter(p => 
+    const filtered = allProducts.filter(p =>
         p.name.toLowerCase().includes(query.toLowerCase()) ||
         p.category.toLowerCase().includes(query.toLowerCase())
     );
@@ -278,18 +264,18 @@ function connectToFirebase() {
         console.log("💡 Tip: Configure Firebase in script.js to enable online product sync");
         return;
     }
-    
+
     // Check if using placeholder config
-    const isPlaceholderConfig = firebaseConfig.apiKey.includes('EXAMPLE') || 
-                                firebaseConfig.apiKey === 'AIzaSyAs-EXAMPLE-PLACEHOLDER';
-    
+    const isPlaceholderConfig = firebaseConfig.apiKey.includes('EXAMPLE') ||
+        firebaseConfig.apiKey === 'AIzaSyAs-EXAMPLE-PLACEHOLDER';
+
     if (isPlaceholderConfig) {
         console.warn("⚠️ Firebase config uses placeholder values!");
         console.log("📝 Update firebaseConfig in script.js with your actual Firebase credentials");
         console.log("📦 Using fallback products until Firebase is configured");
         return;
     }
-    
+
     try {
         // Test connection first
         database.ref('.info/connected').once('value', (snap) => {
@@ -300,7 +286,7 @@ function connectToFirebase() {
                 showNotification("⚠️ Connexion Firebase échouée - Mode hors ligne", 'warning');
             }
         });
-        
+
         // Listen for products
         database.ref('products').on('value', (snap) => {
             const val = snap.val();
@@ -316,11 +302,11 @@ function connectToFirebase() {
         }, (error) => {
             console.error("❌ Firebase error:", error);
             let errorMsg = "⚠️ Erreur de connexion Firebase - Mode hors ligne activé";
-            
+
             if (error.code === 'PERMISSION_DENIED') {
                 errorMsg += "\n\nVérifiez les règles de sécurité Firebase (Realtime Database > Rules)";
             }
-            
+
             showNotification(errorMsg, 'warning');
         });
     } catch (error) {
@@ -343,9 +329,21 @@ function renderProducts(pList) {
 
     if (emptyState) emptyState.style.display = 'none';
 
-    grid.innerHTML = pList.map((p, i) => `
+    // Check local storage for wishlist
+    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+
+    grid.innerHTML = pList.map((p, i) => {
+        const isWishlisted = wishlist.includes(p.id);
+
+        return `
         <div class="product-card reveal-item" style="transition-delay: ${i * 0.1}s" onclick="openProductModal(${p.id})">
             <div class="product-image">
+                <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" 
+                        onclick="event.stopPropagation(); toggleWishlist(${p.id}, this)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </button>
                 ${p.oldPrice ? '<div class="discount-label">PROMO</div>' : ''}
                 <img src="${p.image}" 
                      alt="${p.name}" 
@@ -362,8 +360,57 @@ function renderProducts(pList) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
     triggerReveal();
+}
+
+// Wishlist Logic
+function toggleWishlist(id, btn) {
+    let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+
+    if (wishlist.includes(id)) {
+        wishlist = wishlist.filter(item => item !== id);
+        btn.classList.remove('active');
+        showNotification("Retiré des favoris", "info");
+    } else {
+        wishlist.push(id);
+        btn.classList.add('active');
+
+        // Add particle effect (optional visual flair)
+        createParticles(btn.getBoundingClientRect());
+        showNotification("Ajouté aux favoris ❤️", "success");
+    }
+
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+}
+
+function createParticles(rect) {
+    for (let i = 0; i < 8; i++) {
+        const p = document.createElement('div');
+        p.style.cssText = `
+            position: fixed;
+            left: ${rect.left + rect.width / 2}px;
+            top: ${rect.top + rect.height / 2}px;
+            width: 8px;
+            height: 8px;
+            background: var(--paris-red);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+        document.body.appendChild(p);
+
+        const angle = (Math.PI * 2 * i) / 8;
+        const velocity = 50;
+
+        const keyframes = [
+            { transform: 'translate(0,0) scale(1)', opacity: 1 },
+            { transform: `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity}px) scale(0)`, opacity: 0 }
+        ];
+
+        const anim = p.animate(keyframes, { duration: 600, easing: 'ease-out' });
+        anim.onfinish = () => p.remove();
+    }
 }
 
 // Image error handlers
@@ -404,18 +451,18 @@ function openProductModal(id) {
     selectedSize = null; // Reset selection
     const modal = document.getElementById('product-modal');
     const modalImage = document.getElementById('modal-image');
-    
+
     // Reset zoom when opening modal
     imageZoom.scale = 1;
     imageZoom.panX = 0;
     imageZoom.panY = 0;
     applyImageTransform();
-    
+
     // Show loader and reset image
     const loader = document.getElementById('image-loader');
     if (loader) loader.classList.remove('hidden');
     modalImage.classList.remove('loaded');
-    
+
     modalImage.src = p.image;
     modalImage.onload = () => {
         hideImageLoader();
@@ -424,7 +471,7 @@ function openProductModal(id) {
     modalImage.onerror = () => {
         handleImageError(modalImage);
     };
-    
+
     document.getElementById('modal-name').textContent = p.name;
     document.getElementById('modal-price').textContent = p.displayPrice || p.price + ' DA';
 
@@ -440,7 +487,7 @@ function openProductModal(id) {
     `).join('');
 
     modal.classList.add('active');
-    
+
     // Initialize zoom functionality
     initImageZoom();
 
@@ -452,10 +499,10 @@ function openProductModal(id) {
                 showNotification("Veuillez choisir une taille !", 'warning');
                 return;
             }
-            
+
             // Add to cart
             addToCart(p, selectedSize);
-            
+
             // Also open WhatsApp
             sendToWhatsApp(p);
         };
@@ -467,18 +514,18 @@ function initImageZoom() {
     const imageContainer = document.querySelector('.modal-image-container');
     const imageWrapper = document.querySelector('.image-zoom-wrapper');
     if (!modalImage || !imageContainer) return;
-    
+
     // Reset zoom state
     imageZoom.scale = 1;
     imageZoom.panX = 0;
     imageZoom.panY = 0;
     applyImageTransform();
-    
+
     // Setup zoom control buttons (do this every time modal opens)
     const zoomInBtn = document.getElementById('zoom-in');
     const zoomOutBtn = document.getElementById('zoom-out');
     const zoomResetBtn = document.getElementById('zoom-reset');
-    
+
     if (zoomInBtn) {
         zoomInBtn.onclick = (e) => {
             e.preventDefault();
@@ -486,7 +533,7 @@ function initImageZoom() {
             zoomIn();
         };
     }
-    
+
     if (zoomOutBtn) {
         zoomOutBtn.onclick = (e) => {
             e.preventDefault();
@@ -494,7 +541,7 @@ function initImageZoom() {
             zoomOut();
         };
     }
-    
+
     if (zoomResetBtn) {
         zoomResetBtn.onclick = (e) => {
             e.preventDefault();
@@ -502,10 +549,10 @@ function initImageZoom() {
             resetZoom();
         };
     }
-    
+
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
-    
+
     // Single global wheel handler (blocks page scroll AND performs zoom)
     // NOTE: We must zoom here because stopping propagation at document-level would otherwise prevent
     // the container-level wheel listeners from ever running.
@@ -526,7 +573,7 @@ function initImageZoom() {
         return false;
     };
     document.addEventListener('wheel', imageZoom.globalWheelHandler, { passive: false, capture: true });
-    
+
     // Mouse down - start panning
     imageContainer.addEventListener('mousedown', (e) => {
         if (imageZoom.scale > 1) {
@@ -536,7 +583,7 @@ function initImageZoom() {
             imageContainer.style.cursor = 'grabbing';
         }
     });
-    
+
     // Mouse move - panning
     imageContainer.addEventListener('mousemove', (e) => {
         if (imageZoom.isPanning && imageZoom.scale > 1) {
@@ -545,22 +592,22 @@ function initImageZoom() {
             applyImageTransform();
         }
     });
-    
+
     // Mouse up - stop panning
     imageContainer.addEventListener('mouseup', () => {
         imageZoom.isPanning = false;
         imageContainer.style.cursor = imageZoom.scale > 1 ? 'grab' : 'zoom-in';
     });
-    
+
     // Mouse leave - stop panning
     imageContainer.addEventListener('mouseleave', () => {
         imageZoom.isPanning = false;
         imageContainer.style.cursor = imageZoom.scale > 1 ? 'grab' : 'zoom-in';
     });
-    
+
     // Touch events for mobile pinch zoom
     let lastTouchDistance = 0;
-    
+
     imageContainer.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
             e.preventDefault();
@@ -576,7 +623,7 @@ function initImageZoom() {
             imageZoom.startY = e.touches[0].clientY - imageZoom.panY;
         }
     }, { passive: false });
-    
+
     imageContainer.addEventListener('touchmove', (e) => {
         if (e.touches.length === 2) {
             e.preventDefault();
@@ -586,7 +633,7 @@ function initImageZoom() {
                 touch2.clientX - touch1.clientX,
                 touch2.clientY - touch1.clientY
             );
-            
+
             if (lastTouchDistance > 0) {
                 const scaleChange = (distance - lastTouchDistance) * 0.01;
                 zoomImage(scaleChange, (touch1.clientX + touch2.clientX) / 2, (touch1.clientY + touch2.clientY) / 2);
@@ -599,7 +646,7 @@ function initImageZoom() {
             applyImageTransform();
         }
     }, { passive: false });
-    
+
     imageContainer.addEventListener('touchend', () => {
         lastTouchDistance = 0;
         imageZoom.isPanning = false;
@@ -609,20 +656,20 @@ function initImageZoom() {
 function zoomImage(delta, centerX, centerY) {
     const oldScale = imageZoom.scale;
     const newScale = Math.max(imageZoom.minScale, Math.min(imageZoom.maxScale, imageZoom.scale + delta));
-    
+
     if (centerX !== undefined && centerY !== undefined) {
         const imageContainer = document.querySelector('.modal-image-container');
         if (imageContainer) {
             const rect = imageContainer.getBoundingClientRect();
             const relativeX = centerX - rect.left - rect.width / 2;
             const relativeY = centerY - rect.top - rect.height / 2;
-            
+
             // Calculate zoom point relative to image center
             imageZoom.panX += -relativeX * (newScale - oldScale);
             imageZoom.panY += -relativeY * (newScale - oldScale);
         }
     }
-    
+
     imageZoom.scale = newScale;
     applyImageTransform();
 }
@@ -630,11 +677,11 @@ function zoomImage(delta, centerX, centerY) {
 function applyImageTransform() {
     const modalImage = document.getElementById('modal-image');
     const imageContainer = document.querySelector('.modal-image-container');
-    
+
     if (!modalImage || !imageContainer) return;
-    
+
     modalImage.style.transform = `translate(${imageZoom.panX}px, ${imageZoom.panY}px) scale(${imageZoom.scale})`;
-    
+
     if (imageZoom.scale > 1) {
         modalImage.classList.add('zoomed');
         imageContainer.style.cursor = imageZoom.isPanning ? 'grabbing' : 'grab';
@@ -652,7 +699,7 @@ function resetZoom() {
     imageZoom.panX = 0;
     imageZoom.panY = 0;
     applyImageTransform();
-    
+
     // Remove global wheel handler
     if (imageZoom.globalWheelHandler) {
         document.removeEventListener('wheel', imageZoom.globalWheelHandler, { capture: true });
@@ -706,7 +753,7 @@ function addToCart(product, size) {
         size: size || 'Standard',
         quantity: 1
     };
-    
+
     cart.push(cartItem);
     updateCartCount();
     showNotification(`✅ ${product.name} ajouté au panier !`, 'success');
@@ -723,18 +770,18 @@ function removeFromCart(itemId) {
 function updateCartDrawer() {
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total-amount');
-    
+
     if (!cartItems) return;
-    
+
     if (cart.length === 0) {
         cartItems.innerHTML = '<p style="text-align:center; padding:40px; color:#999;">Votre panier est vide</p>';
         if (cartTotal) cartTotal.textContent = '0 DA';
         return;
     }
-    
+
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     if (cartTotal) cartTotal.textContent = total.toLocaleString() + ' DA';
-    
+
     cartItems.innerHTML = cart.map(item => `
         <div class="cart-item">
             <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/80x80'">
@@ -760,14 +807,14 @@ function sendCartToWhatsApp() {
         showNotification('Votre panier est vide', 'warning');
         return;
     }
-    
+
     let message = `Salam ici.c'est.PARIS 👋\n\nJe souhaite commander :\n\n`;
     cart.forEach((item, i) => {
         message += `${i + 1}. *${item.name}*\n   Taille: ${item.size}\n   Prix: ${item.displayPrice}\n\n`;
     });
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     message += `💰 Total: ${total.toLocaleString()} DA\n\nVeuillez confirmer la disponibilité svp.`;
-    
+
     window.open(`${WHATSAPP_URL}?text=${encodeURIComponent(message)}`, '_blank');
 }
 
@@ -793,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
-    
+
     // Also restore scroll when clicking outside modal
     const modal = document.getElementById('product-modal');
     if (modal) {
@@ -804,16 +851,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+
     // Zoom control buttons
     const zoomInBtn = document.getElementById('zoom-in');
     const zoomOutBtn = document.getElementById('zoom-out');
     const zoomResetBtn = document.getElementById('zoom-reset');
-    
+
     if (zoomInBtn) zoomInBtn.onclick = zoomIn;
     if (zoomOutBtn) zoomOutBtn.onclick = zoomOut;
     if (zoomResetBtn) zoomResetBtn.onclick = resetZoom;
-    
+
     const closeCart = document.querySelector('.close-cart');
     if (closeCart) {
         closeCart.onclick = () => {
@@ -821,7 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cartDrawer) cartDrawer.classList.remove('active');
         };
     }
-    
+
     const cartBtn = document.getElementById('cart-btn');
     if (cartBtn) {
         cartBtn.onclick = () => {
@@ -834,7 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
-    
+
     // WhatsApp checkout button
     const whatsappCheckout = document.getElementById('whatsapp-checkout');
     if (whatsappCheckout) {
@@ -842,7 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sendCartToWhatsApp();
         };
     }
-    
+
     // Add smooth scroll to CTA buttons
     document.querySelectorAll('.cta-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -857,11 +904,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function showNotification(msg, type = 'info') {
     const container = document.getElementById('notification-container');
     if (!container) return;
-    
+
     const n = document.createElement('div');
     n.className = 'notification';
     n.textContent = msg;
-    
+
     // Set color based on type
     const colors = {
         'success': 'linear-gradient(135deg, #28a745, #20c997)',
@@ -869,7 +916,7 @@ function showNotification(msg, type = 'info') {
         'error': 'linear-gradient(135deg, #dc3545, #c82333)',
         'info': 'linear-gradient(135deg, var(--paris-blue), var(--paris-red))'
     };
-    
+
     n.style.background = colors[type] || colors.info;
     n.style.color = 'white';
     n.style.padding = '20px 30px';
@@ -878,12 +925,12 @@ function showNotification(msg, type = 'info') {
     n.style.fontWeight = '700';
     n.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
     n.style.backdropFilter = 'blur(10px)';
-    
+
     container.appendChild(n);
-    
+
     // Animate in
     setTimeout(() => n.style.opacity = '1', 10);
-    
+
     // Remove after delay
     setTimeout(() => {
         n.style.opacity = '0';
@@ -897,7 +944,7 @@ function animateCounter(element, target, duration = 2000) {
     const start = 0;
     const increment = target / (duration / 16);
     let current = start;
-    
+
     const timer = setInterval(() => {
         current += increment;
         if (current >= target) {
