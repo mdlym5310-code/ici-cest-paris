@@ -328,13 +328,26 @@ function connectToFirebase() {
 // --- CORE RENDERING ---
 function renderProducts(pList) {
     const grid = document.getElementById('product-grid');
+    const emptyState = document.getElementById('empty-state');
     if (!grid) return;
+
+    if (pList.length === 0) {
+        grid.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
 
     grid.innerHTML = pList.map((p, i) => `
         <div class="product-card reveal-item" style="transition-delay: ${i * 0.1}s" onclick="openProductModal(${p.id})">
             <div class="product-image">
                 ${p.oldPrice ? '<div class="discount-label">PROMO</div>' : ''}
-                <img src="${p.image}" alt="${p.name}" onerror="this.src='https://placehold.co/600x600?text=Indisponible'">
+                <img src="${p.image}" 
+                     alt="${p.name}" 
+                     loading="lazy"
+                     onload="this.classList.add('loaded')"
+                     onerror="handleProductImageError(this, '${p.name}')">
             </div>
             <div class="product-info">
                 <h3>${p.name}</h3>
@@ -347,6 +360,23 @@ function renderProducts(pList) {
         </div>
     `).join('');
     triggerReveal();
+}
+
+// Image error handlers
+function handleProductImageError(img, productName) {
+    img.src = 'https://placehold.co/600x600?text=Image+Indisponible';
+    img.classList.add('loaded');
+    console.warn(`Image failed to load for product: ${productName}`);
+}
+
+function hideImageLoader() {
+    const loader = document.getElementById('image-loader');
+    if (loader) loader.classList.add('hidden');
+}
+
+function handleImageError(img) {
+    img.src = 'https://placehold.co/800x800?text=Image+Indisponible';
+    hideImageLoader();
 }
 
 // --- UI LOGIC ---
@@ -377,7 +407,20 @@ function openProductModal(id) {
     imageZoom.panY = 0;
     applyImageTransform();
     
+    // Show loader and reset image
+    const loader = document.getElementById('image-loader');
+    if (loader) loader.classList.remove('hidden');
+    modalImage.classList.remove('loaded');
+    
     modalImage.src = p.image;
+    modalImage.onload = () => {
+        hideImageLoader();
+        modalImage.classList.add('loaded');
+    };
+    modalImage.onerror = () => {
+        handleImageError(modalImage);
+    };
+    
     document.getElementById('modal-name').textContent = p.name;
     document.getElementById('modal-price').textContent = p.displayPrice || p.price + ' DA';
 
@@ -397,14 +440,22 @@ function openProductModal(id) {
     // Initialize zoom functionality
     initImageZoom();
 
-    // WHATSAPP Action
-    document.querySelector('.add-to-cart-btn').onclick = () => {
-        if (!selectedSize && (p.sizes && p.sizes.length > 0)) {
-            alert("Veuillez choisir une taille !");
-            return;
-        }
-        sendToWhatsApp(p);
-    };
+    // Add to Cart / WhatsApp Action
+    const addToCartBtn = document.querySelector('.add-to-cart-btn');
+    if (addToCartBtn) {
+        addToCartBtn.onclick = () => {
+            if (!selectedSize && (p.sizes && p.sizes.length > 0)) {
+                showNotification("Veuillez choisir une taille !", 'warning');
+                return;
+            }
+            
+            // Add to cart
+            addToCart(p, selectedSize);
+            
+            // Also open WhatsApp
+            sendToWhatsApp(p);
+        };
+    }
 }
 
 function initImageZoom() {

@@ -5,9 +5,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ici.c'est.PARIS | Boutique Officielle</title>
+    <title>ici.c'est.PARIS | Boutique Officielle - Marques Premium en Algérie</title>
     <meta name="description"
-        content="ici.c'est.PARIS - Votre boutique premium pour les marques internationales originales en Algérie.">
+        content="ici.c'est.PARIS - Votre boutique premium pour les marques internationales originales en Algérie. Livraison express 58 wilayas, paiement à la livraison.">
+    <meta name="keywords" content="boutique, mode, vêtements, chaussures, Algérie, livraison express, marques premium">
+    <meta name="author" content="ici.c'est.PARIS">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mdlym5310-code.github.io/ici-cest-paris/">
+    <meta property="og:title" content="ici.c'est.PARIS | Boutique Officielle">
+    <meta property="og:description" content="Boutique premium pour les marques internationales originales en Algérie">
+    <meta property="og:image" content="https://mdlym5310-code.github.io/ici-cest-paris/images/logo.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mdlym5310-code.github.io/ici-cest-paris/">
+    <meta property="twitter:title" content="ici.c'est.PARIS | Boutique Officielle">
+    <meta property="twitter:description" content="Boutique premium pour les marques internationales originales en Algérie">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +60,12 @@
             <div class="logo">
                 <span class="logo-blue">ici.c'est.</span><span class="logo-red">PARIS</span>
             </div>
-            <nav class="nav-links">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="nav-links" id="nav-links">
                 <a href="#" data-category="all">Boutique</a>
                 <a href="#" data-category="Men">Homme</a>
                 <a href="#" data-category="Shoes">Chaussures</a>
@@ -51,9 +74,11 @@
             </nav>
             <div class="nav-icons">
                 <div class="search-bar">
-                    <input type="text" id="search-input" placeholder="Rechercher...">
+                    <input type="text" id="search-input" placeholder="Rechercher..." aria-label="Search products">
                 </div>
-                <button class="icon-btn" id="cart-btn">Panier (0)</button>
+                <button class="icon-btn" id="cart-btn" aria-label="Shopping cart">
+                    <span id="cart-count">Panier (0)</span>
+                </button>
             </div>
         </div>
     </header>
@@ -100,6 +125,10 @@
             <div class="product-grid" id="product-grid">
                 <!-- Products will be injected here by JS -->
             </div>
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <p>🔍 Aucun produit trouvé</p>
+                <p>Essayez une autre recherche ou parcourez nos catégories</p>
+            </div>
         </section>
     </main>
 
@@ -108,7 +137,20 @@
             <div class="footer-column">
                 <h3>ici.c'est.PARIS</h3>
                 <p>Boutique Premium | 100% Original</p>
-                <p>Algérie</p>
+                <p>📍 Algérie</p>
+                <p>🚚 Livraison Express 58 Wilayas</p>
+            </div>
+            <div class="footer-column">
+                <h4>Contact</h4>
+                <p>📱 WhatsApp: <a href="https://wa.me/213774743573" target="_blank" rel="noopener">+213 774 743 573</a></p>
+                <p>📧 Email: contact@ici-cest-paris.dz</p>
+                <p>⏰ Service Client 24/7</p>
+            </div>
+            <div class="footer-column">
+                <h4>Informations</h4>
+                <p>✅ Produits 100% Originaux</p>
+                <p>💵 Paiement à la Livraison</p>
+                <p>🔄 Retours Gratuits</p>
             </div>
             <div class="footer-column">
                 <p>&copy; 2026 ici.c'est.PARIS. Tous droits réservés.</p>
@@ -116,6 +158,13 @@
             </div>
         </div>
     </footer>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 15l-6-6-6 6"/>
+        </svg>
+    </button>
 
     <!-- Shopping Cart Drawer -->
     <div id="cart-drawer" class="cart-drawer">
@@ -142,7 +191,10 @@
             <div class="modal-body">
                 <div class="modal-image-container">
                     <div class="image-zoom-wrapper">
-                        <img id="modal-image" src="" alt="">
+                        <div class="image-loader" id="image-loader">
+                            <div class="loader-spinner"></div>
+                        </div>
+                        <img id="modal-image" src="" alt="" loading="lazy" onload="hideImageLoader()" onerror="handleImageError(this)">
                     </div>
                     <div id="stock-badge" class="stock-badge">EN STOCK</div>
                     <div class="zoom-controls">
