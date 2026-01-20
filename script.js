@@ -612,6 +612,7 @@ function openProductModal(id) {
     badge.className = `stock-badge ${p.stock === 'out' ? 'out' : ''}`;
 
     // Gallery Logic 📸
+    /*
     const existingGallery = document.querySelector('.thumbnails-container');
     if (existingGallery) existingGallery.remove(); // Cleanup old gallery
 
@@ -627,6 +628,56 @@ function openProductModal(id) {
         // Insert after image container
         const imgContainer = document.querySelector('.modal-image-container');
         if (imgContainer) imgContainer.parentNode.insertBefore(galleryDiv, imgContainer.nextSibling);
+    }
+    */
+
+    // --- CAROUSEL LOGIC (Native Scroll) ---
+    const track = document.getElementById('gallery-track');
+    // const existingGallery = document.querySelector('.thumbnails-container'); // Already selecting via new logic if needed, but we create fresh.
+    const _existingThumbs = document.querySelector('.thumbnails-container');
+    if (_existingThumbs) _existingThumbs.remove();
+
+    // Prepare images array
+    const imagesToDisplay = (p.images && p.images.length > 0) ? p.images : [p.image];
+
+    // Populate Track
+    if (track) {
+        track.innerHTML = imagesToDisplay.map((img, idx) => `
+            <img src="${img}" class="gallery-slide" data-index="${idx}" decoding="async" loading="lazy" style="scroll-snap-align: center; flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover;">
+        `).join('');
+    }
+
+    // Create Thumbnails
+    if (imagesToDisplay.length > 1) {
+        const galleryDiv = document.createElement('div');
+        galleryDiv.className = 'thumbnails-container';
+        galleryDiv.innerHTML = imagesToDisplay.map((img, idx) => `
+            <div class="thumbnail ${idx === 0 ? 'active' : ''}" onclick="scrollToSlide(${idx})">
+                <img src="${img}" alt="Thumbnail">
+            </div>
+        `).join('');
+
+        const imgContainer = document.querySelector('.modal-image-container');
+        if (imgContainer) imgContainer.parentNode.insertBefore(galleryDiv, imgContainer.nextSibling);
+
+        // Sync Thumbnails on Scroll
+        if (track) {
+            track.onscroll = () => {
+                const index = Math.round(track.scrollLeft / track.clientWidth);
+                document.querySelectorAll('.thumbnail').forEach((t, i) => {
+                    t.classList.toggle('active', i === index);
+                });
+            };
+        }
+    } else {
+        if (track) track.onscroll = null;
+    }
+
+    // Hide loader
+    const loader = document.getElementById('image-loader');
+    if (loader) {
+        loader.classList.remove('hidden');
+        setTimeout(() => loader.classList.add('hidden'), 500);
     }
 
     // Sizes Logic
