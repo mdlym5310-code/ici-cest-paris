@@ -707,13 +707,29 @@ function changeModalImage(src, thumb) { ... }
 */
 
 function initImageZoom() {
-    const modalImage = document.getElementById('modal-image');
-    const imageContainer = document.querySelector('.modal-image-container');
-    const imageWrapper = document.querySelector('.image-zoom-wrapper');
-    if (!modalImage || !imageContainer) return;
+    // Find the ACTIVE slide to apply zoom to
+    const track = document.getElementById('gallery-track');
+    let targetImage = document.getElementById('modal-image'); // Fallback
 
-    // Zoom disabled for native swipe gallery
-    return;
+    if (track) {
+        // Find visible image based on scroll position
+        const index = Math.round(track.scrollLeft / track.clientWidth);
+        const slides = track.querySelectorAll('.gallery-slide');
+        if (slides[index]) targetImage = slides[index];
+    }
+
+    if (!targetImage || !imageContainer) return;
+
+    // Reset zoom state
+    imageZoom.scale = 1;
+    imageZoom.panX = 0;
+    imageZoom.panY = 0;
+    applyImageTransform();
+
+    // Setup buttons
+    const zoomInBtn = document.getElementById('zoom-in');
+    const zoomOutBtn = document.getElementById('zoom-out');
+    const zoomResetBtn = document.getElementById('zoom-reset');
 
     if (zoomInBtn) {
         zoomInBtn.onclick = (e) => {
@@ -864,7 +880,15 @@ function zoomImage(delta, centerX, centerY) {
 }
 
 function applyImageTransform() {
-    const modalImage = document.getElementById('modal-image');
+    const track = document.getElementById('gallery-track');
+    let modalImage = document.getElementById('modal-image');
+
+    if (track) {
+        const index = Math.round(track.scrollLeft / track.clientWidth);
+        const slides = track.querySelectorAll('.gallery-slide');
+        if (slides[index]) modalImage = slides[index];
+    }
+
     const imageContainer = document.querySelector('.modal-image-container');
 
     if (!modalImage || !imageContainer) return;
@@ -874,12 +898,36 @@ function applyImageTransform() {
     if (imageZoom.scale > 1) {
         modalImage.classList.add('zoomed');
         imageContainer.style.cursor = imageZoom.isPanning ? 'grabbing' : 'grab';
+        // Disable horizontal scroll when zoomed to prevent swipe conflict
+        if (track) track.style.overflowX = 'hidden';
     } else {
         modalImage.classList.remove('zoomed');
         imageContainer.style.cursor = 'zoom-in';
         imageZoom.panX = 0;
         imageZoom.panY = 0;
         modalImage.style.transform = 'scale(1)';
+        // Re-enable horizontal scroll
+        if (track) track.style.overflowX = 'auto';
+    }
+}
+
+// Helper for scroll
+function scrollToSlide(index) {
+    const track = document.getElementById('gallery-track');
+    if (track) {
+        const width = track.clientWidth;
+        track.scrollTo({
+            left: width * index,
+            behavior: 'smooth'
+        });
+
+        // Update Thumbnails immediately
+        document.querySelectorAll('.thumbnail').forEach((t, i) => {
+            t.classList.toggle('active', i === index);
+        });
+
+        // Reset zoom on slide change
+        resetZoom();
     }
 }
 
@@ -935,7 +983,7 @@ function addToCart(product, size) {
     // Sanitize price (remove commas, spaces, 'DA')
     let rawPrice = product.price;
     let cleanPrice = 0;
-    
+
     if (typeof rawPrice === 'number') {
         cleanPrice = rawPrice;
     } else if (typeof rawPrice === 'string') {
