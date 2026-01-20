@@ -89,41 +89,41 @@ async function initApp() {
 
 // Initialize dynamic features
 function initDynamicFeatures() {
-    // Add parallax effect to hero
+    // Smooth parallax (rAF-throttled)
+    let parallaxRaf = null;
     window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const hero = document.querySelector('.hero');
-        if (hero) {
-            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
-        }
-    });
-
-    // Add mouse move effect to product cards
-    document.addEventListener('mousemove', (e) => {
-        const cards = document.querySelectorAll('.product-card');
-        cards.forEach(card => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = (y - centerY) / 20;
-                const rotateY = (centerX - x) / 20;
-                
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+        if (parallaxRaf) return;
+        parallaxRaf = requestAnimationFrame(() => {
+            parallaxRaf = null;
+            const scrolled = window.pageYOffset || 0;
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.style.transform = `translate3d(0, ${Math.min(scrolled * 0.25, 80)}px, 0)`;
             }
         });
-    });
+    }, { passive: true });
 
-    // Reset card transforms on mouse leave
-    document.addEventListener('mouseleave', () => {
-        const cards = document.querySelectorAll('.product-card');
-        cards.forEach(card => {
-            card.style.transform = '';
-        });
-    });
+    // Product card tilt: only for the hovered card (no global loop every mousemove)
+    document.addEventListener('pointermove', (e) => {
+        const card = e.target && e.target.closest ? e.target.closest('.product-card') : null;
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = (y - centerY) / 28;
+        const rotateY = (centerX - x) / 28;
+        card.style.transform = `translateY(-12px) scale(1.02) perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    }, { passive: true });
+
+    document.addEventListener('pointerleave', (e) => {
+        const card = e.target && e.target.closest ? e.target.closest('.product-card') : null;
+        if (!card) return;
+        card.style.transform = '';
+    }, true);
 }
 
 // Add floating decorative elements
@@ -359,7 +359,8 @@ let imageZoom = {
     startY: 0,
     minScale: 1,
     maxScale: 5,
-    wheelHandler: null
+    wheelHandler: null,
+    globalWheelHandler: null
 };
 
 function openProductModal(id) {
@@ -421,6 +422,20 @@ function initImageZoom() {
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
     
+    // Global wheel blocker (guarantees the page won't scroll while hovering the image)
+    imageZoom.globalWheelHandler = (e) => {
+        const modal = document.getElementById('product-modal');
+        if (!modal || !modal.classList.contains('active')) return;
+        const rect = imageContainer.getBoundingClientRect();
+        const isOverImage = e.clientX >= rect.left && e.clientX <= rect.right &&
+                           e.clientY >= rect.top && e.clientY <= rect.bottom;
+        if (!isOverImage) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    document.addEventListener('wheel', imageZoom.globalWheelHandler, { passive: false, capture: true });
+
     // Create wheel handler function
     imageZoom.wheelHandler = (e) => {
         // Only handle if mouse is over the image area
@@ -585,6 +600,11 @@ function resetZoom() {
             modalImage.removeEventListener('wheel', imageZoom.wheelHandler, { capture: true });
         }
         imageZoom.wheelHandler = null;
+    }
+
+    if (imageZoom.globalWheelHandler) {
+        document.removeEventListener('wheel', imageZoom.globalWheelHandler, { capture: true });
+        imageZoom.globalWheelHandler = null;
     }
 }
 
