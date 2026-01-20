@@ -451,42 +451,26 @@ function initImageZoom() {
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
     
-    // Global wheel blocker (guarantees the page won't scroll while hovering the image)
+    // Single global wheel handler (blocks page scroll AND performs zoom)
+    // NOTE: We must zoom here because stopping propagation at document-level would otherwise prevent
+    // the container-level wheel listeners from ever running.
     imageZoom.globalWheelHandler = (e) => {
         const modal = document.getElementById('product-modal');
         if (!modal || !modal.classList.contains('active')) return;
+
         const rect = imageContainer.getBoundingClientRect();
         const isOverImage = e.clientX >= rect.left && e.clientX <= rect.right &&
-                           e.clientY >= rect.top && e.clientY <= rect.bottom;
+            e.clientY >= rect.top && e.clientY <= rect.bottom;
         if (!isOverImage) return;
 
         e.preventDefault();
         e.stopPropagation();
+
+        const delta = e.deltaY > 0 ? -0.15 : 0.15;
+        zoomImage(delta, e.clientX, e.clientY);
+        return false;
     };
     document.addEventListener('wheel', imageZoom.globalWheelHandler, { passive: false, capture: true });
-
-    // Create wheel handler function
-    imageZoom.wheelHandler = (e) => {
-        // Only handle if mouse is over the image area
-        const rect = imageContainer.getBoundingClientRect();
-        const isOverImage = e.clientX >= rect.left && e.clientX <= rect.right &&
-                           e.clientY >= rect.top && e.clientY <= rect.bottom;
-        
-        if (isOverImage) {
-            e.preventDefault();
-            e.stopPropagation();
-            const delta = e.deltaY > 0 ? -0.15 : 0.15;
-            zoomImage(delta, e.clientX, e.clientY);
-            return false;
-        }
-    };
-    
-    // Attach wheel event to container, wrapper, and image with capture phase
-    imageContainer.addEventListener('wheel', imageZoom.wheelHandler, { passive: false, capture: true });
-    if (imageWrapper) {
-        imageWrapper.addEventListener('wheel', imageZoom.wheelHandler, { passive: false, capture: true });
-    }
-    modalImage.addEventListener('wheel', imageZoom.wheelHandler, { passive: false, capture: true });
     
     // Mouse down - start panning
     imageContainer.addEventListener('mousedown', (e) => {
@@ -614,24 +598,7 @@ function resetZoom() {
     imageZoom.panY = 0;
     applyImageTransform();
     
-    // Remove wheel event listeners
-    const modalImage = document.getElementById('modal-image');
-    const imageContainer = document.querySelector('.modal-image-container');
-    const imageWrapper = document.querySelector('.image-zoom-wrapper');
-    
-    if (imageZoom.wheelHandler) {
-        if (imageContainer) {
-            imageContainer.removeEventListener('wheel', imageZoom.wheelHandler, { capture: true });
-        }
-        if (imageWrapper) {
-            imageWrapper.removeEventListener('wheel', imageZoom.wheelHandler, { capture: true });
-        }
-        if (modalImage) {
-            modalImage.removeEventListener('wheel', imageZoom.wheelHandler, { capture: true });
-        }
-        imageZoom.wheelHandler = null;
-    }
-
+    // Remove global wheel handler
     if (imageZoom.globalWheelHandler) {
         document.removeEventListener('wheel', imageZoom.globalWheelHandler, { capture: true });
         imageZoom.globalWheelHandler = null;
