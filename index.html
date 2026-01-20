@@ -141,8 +141,16 @@
             <span class="close-modal">&times;</span>
             <div class="modal-body">
                 <div class="modal-image-container">
-                    <img id="modal-image" src="" alt="">
+                    <div class="image-zoom-wrapper">
+                        <img id="modal-image" src="" alt="">
+                    </div>
                     <div id="stock-badge" class="stock-badge">EN STOCK</div>
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" id="zoom-in" title="Zoom In">+</button>
+                        <button class="zoom-btn" id="zoom-out" title="Zoom Out">−</button>
+                        <button class="zoom-btn" id="zoom-reset" title="Reset Zoom">⟲</button>
+                    </div>
+                    <div class="zoom-hint">🖱️ Scroll to zoom • Click to pan</div>
                 </div>
                 <div class="modal-info">
                     <h2 id="modal-name"></h2>
