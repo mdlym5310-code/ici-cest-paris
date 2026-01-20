@@ -137,9 +137,21 @@
             </div>
         </div>
         <div class="form-group">
-            <label>URL de l'image (Instagram ou Direct)</label>
-            <input type="text" id="p-img" placeholder="https://...">
+            <label>Image du produit (URL ou Upload)</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="p-img" placeholder="https://..." onchange="updatePreview()">
+                <label for="p-file" class="upload-btn"
+                    style="cursor: pointer; background: var(--paris-blue); color: white; padding: 10px 15px; border-radius: 8px; font-size: 14px;">
+                    📸 Upload
+                </label>
+                <input type="file" id="p-file" accept="image/*" style="display: none;"
+                    onchange="handleImageUpload(this)">
+            </div>
+            <small style="color: #666; font-size: 11px;">Max 800px - Compression auto</small>
         </div>
+
+        <!-- Hidden canvas for compression -->
+        <canvas id="compress-canvas" style="display: none;"></canvas>
 
         <button class="btn-add" onclick="addProduct()">PUBLIER SUR LA BOUTIQUE</button>
 
